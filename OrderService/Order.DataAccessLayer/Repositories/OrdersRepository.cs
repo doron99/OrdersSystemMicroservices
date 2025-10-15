@@ -75,10 +75,12 @@ namespace DataAccessLayer.Repositories
                 TotalAmount = order.TotalAmount,
                 OrderItems = order.OrderItems.Select(oi => new OrderItemDto
                 {
-                    OrderItemId = oi.Id,
+                    OrderItemId = oi.OrderItemId,
                     Sku = oi.Sku,
                     Quantity = oi.Quantity,
-                    UnitPrice = oi.UnitPrice
+                    UnitPrice = oi.UnitPrice,
+                    OrderItemDesc = oi.OrderItemDesc,
+                    ProductId = oi.ProductId
                 }).ToList()
             };
 
@@ -107,7 +109,7 @@ namespace DataAccessLayer.Repositories
                 throw new Exception("Order not found");
             }
 
-            var orderItem = orderWithItems.OrderItems.FirstOrDefault(oi => oi.Id == itemId);
+            var orderItem = orderWithItems.OrderItems.FirstOrDefault(oi => oi.OrderItemId == itemId);
             if (orderItem == null)
             {
                 _logger.LogInformation("Order item not found");
@@ -123,12 +125,12 @@ namespace DataAccessLayer.Repositories
             return true;
         }
         
-        public async Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, string? customerId, int page, int pageSize)
+        public async Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, Guid? customerId, int page, int pageSize)
         {
             var query = _ctx.Orders.AsNoTracking()
             /// Apply filters conditionally using ConditionalWhere
             .ConditionalWhere(() => status.HasValue, o => o.Status == status!.Value)
-            .ConditionalWhere(() => !string.IsNullOrEmpty(customerId), o => o.CustomerId == customerId)
+            .ConditionalWhere(() => customerId != null, o => o.CustomerId == customerId)
                 .Include(o => o.OrderItems); // Eager load the OrderItems
 
 
@@ -151,10 +153,12 @@ namespace DataAccessLayer.Repositories
                 TotalAmount = order.TotalAmount,
                 OrderItems = order.OrderItems.Select(oi => new OrderItemDto
                 {
-                    OrderItemId = oi.Id,
+                    OrderItemId = oi.OrderItemId,
                     Sku = oi.Sku,
                     Quantity = oi.Quantity,
-                    UnitPrice = oi.UnitPrice
+                    UnitPrice = oi.UnitPrice,
+                    OrderItemDesc = oi.OrderItemDesc,
+                    ProductId = oi.ProductId
                 }).ToList()
             }).ToList();
 

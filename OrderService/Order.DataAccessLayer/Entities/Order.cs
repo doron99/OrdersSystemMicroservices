@@ -20,7 +20,7 @@ namespace DataAccessLayer.Entities
         public Guid Id { get; set; }
 
         [Required]
-        public string CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
 
         [Required]
         [EnumDataType(typeof(OrderStatus))]

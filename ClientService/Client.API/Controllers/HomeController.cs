@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Client.API.Models;
 using System.Diagnostics;
 using Client.API.Services;
+using Client.API.HttpClients;
 
 namespace Client.API.Controllers
 {
@@ -9,11 +10,16 @@ namespace Client.API.Controllers
     {
         private readonly IConfiguration _config;
         private readonly ILogger<HomeController> _logger;
+        private readonly ProductsMicroserviceClient _productsMicroserviceClient;
+        private readonly OrdersMicroserviceClient _ordersMicroserviceClient;
 
-        public HomeController(IConfiguration config, ILogger<HomeController> logger)
+        public HomeController(IConfiguration config, ILogger<HomeController> logger, 
+            ProductsMicroserviceClient productsMicroserviceClient, OrdersMicroserviceClient ordersMicroserviceClient)
         {
             _config = config;
             _logger = logger;
+            _productsMicroserviceClient = productsMicroserviceClient;
+            _ordersMicroserviceClient = ordersMicroserviceClient;
         }
         
         public IActionResult Index()
@@ -32,9 +38,20 @@ namespace Client.API.Controllers
         {
             return View();
         }
-        public IActionResult AddNewOrder()
+        public async Task<IActionResult> AddNewOrder()
         {
             ViewData["Customers"] = FakeCustomerService.GetCustomers();
+            ViewData["Products"] = await _productsMicroserviceClient.GetProducts();
+
+            return View();
+        }
+        [HttpGet("home/editorder/{id}")]
+        public async Task<IActionResult> EditOrder(string id)
+        {
+            ViewData["Customers"] = FakeCustomerService.GetCustomers();
+            ViewData["Products"] = await _productsMicroserviceClient.GetProducts();
+            ViewData["Order"] = await _ordersMicroserviceClient.GetById(Guid.Parse(id));
+
             return View();
         }
 

@@ -1,0 +1,212 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    var order = ViewData["Order"] as object; // Adjust the type as necessary
+    var jsonOrder = Json.Serialize(order); // Serialize customers into JSON
+    var products = ViewData["Products"] as List<Client.API.Dtos.ProductDto>; // Adjust the type as necessary
+    var jsonProducts = Json.Serialize(products); // Serialize customers into JSON
+}
+<h1>Order Details</h1>
+
+<div id="orderDetails"></div>
+
+
+<h2>Order Items</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>SKU</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total Price</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="orderItemsTable">
+        <tr>
+            <td>Item1</td>
+            <td>Description for Item1</td>
+            <td>20</td>
+            <td>$19</td>
+            <td>$380</td>
+            <td><button class="removeItem">Remove</button></td>
+        </tr>
+        <tr>
+            <td>Item2</td>
+            <td>Description for Item2</td>
+            <td>5</td>
+            <td>$1</td>
+            <td>$5</td>
+            <td><button class="removeItem">Remove</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Add Order Item</h2>
+<div>
+    <label for="productSelect">Select Product:</label>
+    <select id="productSelect">
+        <option value="" data-price="0">-- Select a Product --</option>
+        <option value="3e3r4r4t55t" data-price="19" data-sku="5">Item1</option>
+        <option value="erg45y56ht" data-price="1" data-sku="6">Item2</option>
+        <option value="7u7u8ii8i8i" data-price="5" data-sku="7">Item3</option>
+    </select>
+    <label>Quantity:</label>
+    <input type="number" id="newItemQuantity" min="1" value="1">
+    <button id="addOrderItem">Add Item</button>
+</div>
+
+<script>
+    var products = @Html.Raw(jsonProducts);
+    //function renderProductSelect() {
+    //    // Populate products in dropdown
+    //    products.forEach(product => {
+    //        const option = document.createElement('option');
+    //        option.value = product.productId;
+    //        option.innerText = product.productDesc + ' | ' + product.sku;
+    //        productSelect.appendChild(option);
+    //    });
+    //}
+    function renderProductSelect() {
+        // Populate products in dropdown
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.productId;
+            option.setAttribute('data-price', product.unitPrice); // Add data-price attribute
+            option.setAttribute('data-sku', product.sku); // Add data-sku attribute
+            option.innerText = product.productDesc; // Set the inner text as needed
+            productSelect.appendChild(option);
+        });
+    }
+    function renderOrderDetails() {
+        const orderDetailsHtml = `
+     <p><strong>Order ID:</strong> ${order.orderId}</p>
+     <p><strong>Customer ID:</strong> ${order.customerId}</p>
+     <p><strong>Status:</strong> ${order.status}</p>
+     <p><strong>Created At:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+     <p><strong>Updated At:</strong> ${new Date(order.updatedAt).toLocaleString()}</p>
+     <p><strong>Total Amount:</strong> ${order.totalAmount}</p>
+ `;
+        $('#orderDetails').html(orderDetailsHtml);
+    }
+    function renderOrderItems() {
+        order.orderItems.forEach(item => {
+            const totalPrice = (item.quantity * item.unitPrice).toFixed(2);
+            const itemHtml = `
+    <tr>
+        <td>${item.sku}</td>
+        <td>${item.orderItemDesc || 'N/A'}</td>
+        <td>${item.quantity}</td>
+        <td>${item.unitPrice}</td>
+        <td>${totalPrice}</td>
+        <td><button class="removeItem">Remove</button></td>
+    </tr>
+`;
+            $('#orderItemsTable').append(itemHtml);
+        });
+    }
+    $(document).ready(function () {
+        renderOrderDetails();
+        renderOrderItems();
+        renderProductSelect();
+        // Function to remove an order item
+        $("#orderItemsTable").on("click", ".removeItem", function () {
+            $(this).closest("tr").remove(); // Remove the row
+        });
+        // Display order items in the table
+
+        // Add event listener to the Add Item button
+        $("#addOrderItem").click(function () {
+            const selectedProduct = $("#productSelect option:selected");
+            const productDesc = selectedProduct.text();
+            const productId = selectedProduct.val();
+
+            const sku = selectedProduct.data("sku"); // Get the price from data attribute
+            const unitPrice = parseFloat(selectedProduct.data("price")); // Get the price from data attribute
+            const quantity = parseInt($("#newItemQuantity").val());
+
+            const orderItem = {
+                orderItemDesc: productDesc,
+                productId: productId,
+                sku: sku,
+                quantity: quantity,
+                unitPrice: parseFloat(unitPrice) // Ensure it is a float
+            };
+            console.log(orderItem);
+            //return;
+
+            // Send POST request to add the order item
+            $.ajax({
+                type: "POST",
+                url: `http://localhost:5002/api/orders/${order.orderId}/items/`, // Change to your endpoint
+                contentType: "application/json",
+                data: JSON.stringify(orderItem),
+                success: function (response) {
+                    //alert('Order item added successfully!');
+                    // Optionally: Clear input fields or update UI
+                    console.log('response', response)
+                    addOrderItem(response)
+                },
+                error: function (xhr, status, error) {
+                    alert('Error adding order item: ' + error);
+                }
+            });
+
+
+            //if (sku && quantity > 0) {
+            //    const totalPrice = (quantity * unitPrice).toFixed(2);
+
+            //    // Create a new row in the order items table
+            //    const newRow = `
+            //            <tr>
+            //                <td>${productDesc}</td>
+            //                <td>${sku}</td>
+            //                <td>${quantity}</td>
+            //                <td>${unitPrice}</td>
+            //                <td>${totalPrice}</td>
+            //                <td><button class="removeItem">Remove</button></td>
+            //            </tr>
+            //        `;
+
+            //    $("#orderItemsTable").append(newRow); // Add the new row to the table
+            //}
+        }
+        );
+    });
+    function addOrderItem(orderItem) {
+        const { orderItemDesc, productId, quantity, sku, unitPrice } = orderItem;
+
+        // Check if SKU and quantity are valid
+        if (sku && quantity > 0) {
+            const totalPrice = (quantity * unitPrice).toFixed(2);
+
+            // Create a new row in the order items table
+            const newRow = `
+            <tr>
+                <td>${orderItemDesc}</td>
+                <td>${sku}</td>
+                <td>${quantity}</td>
+                <td>${unitPrice.toFixed(2)}</td>
+                <td>${totalPrice}</td>
+                <td><button class="removeItem">Remove</button></td>
+            </tr>
+        `;
+
+            // Append the new row to the table
+            $("#orderItemsTable").append(newRow);
+        } else {
+            console.error("Invalid SKU or quantity"); // Log error if SKU or quantity is invalid
+        }
+    }
+</script>
+<script>
+        // Assuming you have this data from your backend
+        var order = @Html.Raw(jsonOrder);
+        console.log(order)
+</script>
+
+
+
+

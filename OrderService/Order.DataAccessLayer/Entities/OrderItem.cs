@@ -14,14 +14,18 @@ namespace DataAccessLayer.Entities
     {
         public OrderItem()
         {
-            Id = Guid.NewGuid();
+            OrderItemId = Guid.NewGuid();
         }
         [Key]
-        public Guid Id { get; set; }
+        public Guid OrderItemId { get; set; }
 
         [ForeignKey("Order")]
         public Guid OrderId { get; set; }
 
+        [Required]
+        public Guid ProductId { get; set; }
+        [Required]
+        public string OrderItemDesc { get; set; }
         [Required]
         public string Sku { get; set; }
 

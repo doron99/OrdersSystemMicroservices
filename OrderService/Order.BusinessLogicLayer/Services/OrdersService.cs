@@ -71,7 +71,7 @@ namespace BusinessLogicLayer.Services
         }
 
 
-        public async Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, string? customerId, int page, int pageSize)
+        public async Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, Guid? customerId, int page, int pageSize)
         {
             var orders = await _ordersRepo.OrderGetByParamsAsync(status, customerId, page, pageSize);
 

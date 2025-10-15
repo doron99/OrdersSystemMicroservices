@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Client.API.Models;
 using System.Text.Json;
+using System.Text;
 
 namespace Client.API.HttpClients
 {
@@ -14,6 +15,62 @@ namespace Client.API.HttpClients
         {
             _httpClient = httpClient;
             _logger = logger;
+        }
+        public async Task<object?> AddOrder(Guid customerId)
+        {
+            //List<OrderForResponseWithItems?> orderForResponseWithItems = null;
+            try
+            {
+                var jsonContent = JsonSerializer.Serialize(new { customerId = customerId });// orderRequest);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await _httpClient.PostAsync($"/api/orders", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<object?>();// List<OrderForResponseWithItems?>>();
+                    //orderForResponseWithItems = result ?? new List<OrderForResponseWithItems?>();
+                    var res = result ?? new { Error = "Error occoured" };
+                    return res;
+                }
+                else
+                {
+                    throw new HttpRequestException("Http response status occour:" + response.StatusCode.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching orders.");
+                throw;
+            }
+
+        }
+        public async Task<object?> AddOrderItem(Guid orderId, object orderItem)
+        {
+            //List<OrderForResponseWithItems?> orderForResponseWithItems = null;
+            try
+            {
+                var jsonContent = JsonSerializer.Serialize(orderItem);// orderRequest);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await _httpClient.PostAsync($"/api/orders/{orderId}/items", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<object?>();// List<OrderForResponseWithItems?>>();
+                    //orderForResponseWithItems = result ?? new List<OrderForResponseWithItems?>();
+                    var res = result ?? new { Error = "Error occoured" };
+                    return res;
+                }
+                else
+                {
+                    throw new HttpRequestException("Http response status occour:" + response.StatusCode.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching orders.");
+                throw;
+            }
+
         }
         public async Task<List<OrderForResponseWithItems?>> GetOrders()
         {
@@ -37,7 +94,36 @@ namespace Client.API.HttpClients
                 throw;
             }
        
+
         }
+        public async Task<object?> GetById(Guid id)
+        {
+            List<object?> orderForResponseWithItems = null;
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync($"/api/orders/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<object?>();
+                    //orderForResponseWithItems = result;// new List<OrderForResponseWithItems?>();
+
+                    return result;
+                }
+                else
+                {
+                    throw new HttpRequestException("Http response status occour:" + response.StatusCode.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching orders.");
+                throw;
+            }
+
+
+        }
+        
         public async Task<object> OrderConfirm(string id)
         {
             try

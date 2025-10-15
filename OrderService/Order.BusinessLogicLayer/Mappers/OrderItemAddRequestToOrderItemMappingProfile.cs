@@ -12,7 +12,9 @@ namespace BusinessLogicLayer.Mappers
                 .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.UnitPrice))
                 .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
-                .ForMember(dest => dest.Id, opt => opt.Ignore());
+                .ForMember(dest => dest.OrderItemDesc, opt => opt.MapFrom(src => src.OrderItemDesc))
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+                .ForMember(dest => dest.OrderItemId, opt => opt.Ignore());
 
         }
     }

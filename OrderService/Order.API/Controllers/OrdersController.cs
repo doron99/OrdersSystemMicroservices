@@ -100,7 +100,7 @@ namespace Order.API.Controllers
         [HttpGet]
         public async Task<IActionResult> OrderGetList(
             int? status = null,
-            string? customerId = null,
+            Guid? customerId = null,
             int page = 1,
             int pageSize = 2)
         {

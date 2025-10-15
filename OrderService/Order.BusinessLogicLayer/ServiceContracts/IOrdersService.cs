@@ -16,6 +16,6 @@ namespace BusinessLogicLayer.ServiceContracts
 
         Task<bool> OrderChangeStatusAsync(Guid id, OrderStatus orderStatus);
         Task<OrderForResponseWithItems?> OrderGetByIdAsync(Guid id);
-        Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, string? customerId, int page, int pageSize);
+        Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, Guid? customerId, int page, int pageSize);
     }
 }

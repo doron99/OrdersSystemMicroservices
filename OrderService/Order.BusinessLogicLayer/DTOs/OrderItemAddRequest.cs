@@ -10,6 +10,8 @@ namespace BusinessLogicLayer.DTOs
 {
     public class OrderItemAddRequest
     {
+        public string OrderItemDesc { get; set; }
+        public Guid ProductId { get; set; }
         public string Sku { get; set; }
 
         public int Quantity { get; set; }

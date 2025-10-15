@@ -2,20 +2,26 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    var customers = ViewData["Customers"] as List<Customer>; // Adjust the type as necessary
+    var jsonCustomers = Json.Serialize(customers); // Serialize customers into JSON
+    var products = ViewData["Products"] as List<Client.API.Dtos.ProductDto>; // Adjust the type as necessary
+    var jsonProducts = Json.Serialize(products); // Serialize customers into JSON
 }
 <h1>Customer and Product Management</h1>
 
 <div>
     <label for="customer">Choose Customer:</label>
     <select id="customer">
-       
+        <!-- Customers will be populated here -->
     </select>
+    <button onclick="createOrder();" id="addNewOrder">Add new order</button>
+
 </div>
 
 <div>
     <label for="product">Select Product:</label>
     <select id="product">
-       
+        <!-- Products will be populated here -->
     </select>
     <label for="quantity">Quantity:</label>
     <input type="number" id="quantity" placeholder="Quantity" min="1">
@@ -23,23 +29,26 @@
 </div>
 
 <h2>Products List</h2>
-<ul id="productList"></ul>
+<table id="productTable" border="1">
+    <thead>
+        <tr>
+            <th>Product Id</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="productList">
+        <!-- Product rows will be added here -->
+    </tbody>
+</table>
 
 <button id="clearProducts">Clear All Products</button>
 
 <script>
-    // Sample data for customers and products
-    const customers = [
-        { id: 1, name: "Customer 1" },
-        { id: 2, name: "Customer 2" },
-        { id: 3, name: "Customer 3" }
-    ];
-
-    const products = [
-        { name: "Product A" },
-        { name: "Product B" },
-        { name: "Product C" }
-    ];
+    // Assuming you have this data from your backend
+    var customers = @Html.Raw(jsonCustomers);
+    var products = @Html.Raw(jsonProducts);
 
     const productList = [];
     const productListElement = document.getElementById('productList');
@@ -49,25 +58,27 @@
     // Populate customers in dropdown
     customers.forEach(customer => {
         const option = document.createElement('option');
-        option.value = customer.id;
-        option.innerText = customer.name;
+        option.value = customer.customerId;
+        option.innerText = customer.customerName;
         customerSelect.appendChild(option);
     });
 
     // Populate products in dropdown
     products.forEach(product => {
         const option = document.createElement('option');
-        option.value = product.name;
-        option.innerText = product.name;
+        option.value = product.productId;
+        option.innerText = product.productDesc + ' | ' + product.sku;
         productSelect.appendChild(option);
     });
 
     document.getElementById('addProduct').addEventListener('click', () => {
-        const productName = productSelect.value;
+        const productName = productSelect.options[productSelect.selectedIndex].innerText;
+        const productId = productSelect.options[productSelect.selectedIndex].value;
+        console.log('productId',productId)
         const quantity = parseInt(document.getElementById('quantity').value);
 
         if (productName && quantity > 0) {
-            const product = { name: productName, quantity: quantity };
+            const product = { id:productId,name: productName, quantity: quantity };
             productList.push(product);
             renderProductList();
             clearInputs();
@@ -80,22 +91,45 @@
         productList.length = 0;
         renderProductList();
     });
-
+    ///##-----create order---------------###############
+    function createOrder() {
+        const customerId = customerSelect.options[customerSelect.selectedIndex].value;
+        console.log('customerId', customerId)
+        addOrderApi(customerId);
+    }
     function renderProductList() {
-        productListElement.innerHTML = '';
-        productList.forEach((product, index) => {
-            const li = document.createElement('li');
-            li.innerText = `${product.name} (Quantity: ${product.quantity})`;
+        const productListElement = document.getElementById('productList');
+        productListElement.innerHTML = ''; // Clear existing rows
 
+        productList.forEach((product, index) => {
+            const row = document.createElement('tr');
+            // Product name cell
+            const idCell = document.createElement('td');
+            idCell.innerText = product.id;
+            row.appendChild(idCell);
+            // Product name cell
+            const nameCell = document.createElement('td');
+            nameCell.innerText = product.name;
+            row.appendChild(nameCell);
+
+            // Quantity cell
+            const quantityCell = document.createElement('td');
+            quantityCell.innerText = product.quantity;
+            row.appendChild(quantityCell);
+
+            // Action cell with delete button
+            const actionCell = document.createElement('td');
             const deleteButton = document.createElement('button');
             deleteButton.innerText = 'Delete';
             deleteButton.onclick = () => {
                 productList.splice(index, 1);
                 renderProductList();
             };
+            actionCell.appendChild(deleteButton);
+            row.appendChild(actionCell);
 
-            li.appendChild(deleteButton);
-            productListElement.appendChild(li);
+            // Append the row to the table body
+            productListElement.appendChild(row);
         });
     }
 
@@ -103,4 +137,137 @@
         productSelect.value = '';
         document.getElementById('quantity').value = '';
     }
+    function addOrderApi(orderData) {
+        fetch('http://localhost:5002/api/orders', {
+            method: 'POST', // Specify POST method
+            headers: {
+                'Content-Type': 'application/json' // Indicate that you're sending JSON data
+            },
+            body: JSON.stringify({customerId: orderData}) // Convert the orderData object to a JSON string
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Order created successfully:', data);
+                // You can add additional logic here to handle the response data as needed
+            })
+            .catch(error => {
+                console.error('Error creating order:', error);
+                // Optionally handle the error
+            });
+    }
+
 </script>
+@*<div>
+        <label for="customer">Choose Customer:</label>
+        <select id="customer">
+        </select>
+    </div>
+
+    <div>
+        <label for="product">Select Product:</label>
+        <select id="product">
+        </select>
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" placeholder="Quantity" min="1">
+        <button id="addProduct">Add Product</button>
+    </div>
+
+    <h2>Products List</h2>
+    <ul id="productList"></ul>
+
+    <button id="clearProducts">Clear All Products</button>
+
+    <script>
+        var customers = @Html.Raw(jsonCustomers);
+        console.log(customers)
+        const products = @Html.Raw(jsonProducts);
+        console.log(products)
+
+        const productList = [];
+        const productListElement = document.getElementById('productList');
+        const customerSelect = document.getElementById('customer');
+        const productSelect = document.getElementById('product');
+
+        // Populate customers in dropdown
+        customers.forEach(customer => {
+            const option = document.createElement('option');
+            option.value = customer.customerId;
+            option.innerText = customer.customerName;
+            customerSelect.appendChild(option);
+        });
+
+        // Populate products in dropdown
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.productId;
+            option.innerText = product.productDesc;
+            productSelect.appendChild(option);
+        });
+
+        document.getElementById('addProduct').addEventListener('click', () => {
+            const productName = productSelect.value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (productName && quantity > 0) {
+                const product = { name: productName, quantity: quantity };
+                productList.push(product);
+                renderProductList();
+                clearInputs();
+            } else {
+                alert("Please select a product and enter a valid quantity.");
+            }
+        });
+
+        document.getElementById('clearProducts').addEventListener('click', () => {
+            productList.length = 0;
+            renderProductList();
+        });
+
+        function renderProductList() {
+            productListElement.innerHTML = '';
+            productList.forEach((product, index) => {
+                const li = document.createElement('li');
+                li.innerText = `${product.name} (Quantity: ${product.quantity})`;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Delete';
+                deleteButton.onclick = () => {
+                    productList.splice(index, 1);
+                    renderProductList();
+                };
+
+                li.appendChild(deleteButton);
+                productListElement.appendChild(li);
+            });
+        }
+
+        function clearInputs() {
+            productSelect.value = '';
+            document.getElementById('quantity').value = '';
+        }
+    </script>*@
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    button {
+        margin-left: 10px;
+    }
+</style>
