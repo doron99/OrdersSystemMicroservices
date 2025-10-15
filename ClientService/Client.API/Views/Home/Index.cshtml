@@ -1,0 +1,117 @@
+﻿@{
+   
+}
+
+<div class="text-center">
+    This page is perform websocket by SignalR
+    <br />
+    on Order status changed, and it will be notify in this page.
+</div>
+<h3>List of Orders </h3>
+<div id="ordersContainer"></div>
+
+
+
+<script>
+    var ordersServiceUrl = '@ViewData["OrdersServiceUrl"]';
+    var ordersClientServiceUrl = '@ViewData["OrdersClientServiceUrl"]';
+
+    console.log('ordersServiceUrl', ordersServiceUrl);
+    console.log('ordersClientServiceUrl', ordersClientServiceUrl);
+
+    $(document).ready(function () {
+        // Create a connection to the hub
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(ordersServiceUrl +"/orderHub")
+            .build();
+
+        //handle incoming messages
+        connection.on("ReceiveOrderStatusUpdate", (orderId, status) => {
+            console.log(`Order ${orderId} status updated to: ${status}`);
+            if (status == 1) {
+                //confirm
+                toastr.success(`Order ${orderId} status has been confirmed`, 'SignalR notify');
+            } else {
+                //cancelled
+                toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
+            }
+        });
+
+        // Start the connection
+        connection.start()
+            .then(() => console.log("Connected to the hub"))
+            .catch(err => console.error("Error connecting to the hub: ", err));
+
+        getOrders();
+    });
+    function getOrders() {
+        fetch(ordersClientServiceUrl +'/api/orders')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Orders:', data);
+                //document.getElementById('ordersContainer').textContent = JSON.stringify(data, null, 2); OrderConfirm
+                renderHtmlTable(data);
+
+
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+    function renderHtmlTable(data) {
+        const ordersContainer = document.getElementById('ordersContainer');
+        let html = ''; // Initialize an empty string to hold the HTML
+
+        data.forEach(order => {
+            const orderItems = order.orderItems.map(oi => {
+                return `<ul>
+                <li>orderItemId:${oi.orderItemId}</li>
+                <li>sku:${oi.sku}</li>
+                <li>quantity:${oi.quantity}</li>
+                <li>unitPrice:${oi.unitPrice}</li>
+                </ul>`
+            });
+            // Prepare the HTML for each order
+            html += `<div class="order">
+                <div>ID: ${order.orderId}</div>
+                <div>customerId: ${order.customerId}</div>
+                <div>totalAmount: ${order.totalAmount}</div>
+                <div>orderItems: ${orderItems.join('')}</div>
+
+                <a class="btn btn-success" onclick="OrderChangeStatus('${order.orderId}','Confirm')">Confirm</a>
+                |
+                <a class="btn btn-danger" onclick="OrderChangeStatus('${order.orderId}','Cancel')">Cancel</a>
+            </div>`;
+        });
+
+        // Set the innerHTML of the container once
+        ordersContainer.innerHTML = html;
+    }
+    function OrderChangeStatus(id,action) {
+        fetch(`http://localhost:5002/api/orders/Order${action}/` +id)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Order status:', data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+</script>
+<style>
+    .order {
+        border:1px solid black;
+        padding:4px;
+        margin-bottom:5px;
+    }
+</style>

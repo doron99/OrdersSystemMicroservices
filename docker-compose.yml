@@ -1,0 +1,70 @@
+services:
+  order.api:
+    image: orderapi
+    build:
+      context: .
+      dockerfile: OrderService/Order.API/Dockerfile
+    environment:
+     - MSSQL_DATABASE=OrdersDB
+     - MSSQL_HOST=sqlserver
+     - MSSQL_PORT=1433
+     - MSSQL_USER=sa
+     - MSSQL_PASSWORD=Password!
+     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://client.api:8081
+     - RabbitMQ_HostName=rabbitmq
+     - RabbitMQ_UserName=user
+     - RabbitMQ_Password=password
+     - RabbitMQ_Port=5672
+     - RabbitMQ_Products_Exchange=product.exchange
+    ports:
+     - "5001:8080"
+    depends_on:
+     - sqlserver
+    networks:
+      - orders_network
+ 
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+     - ACCEPT_EULA=Y
+     - SA_PASSWORD=Password!
+     - MSSQL_PID=Developer
+    ports:
+     - "1433:1433"
+    networks:
+      - orders_network
+
+  order.client:
+    image: clientapi
+    build:
+        context: .
+        dockerfile: ClientService/Client.API/Dockerfile
+    ports:
+     - "5002:8081"
+    environment:
+     - ORDER_API_MICROSERVICE_BASE_URL=http://localhost:5001
+     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://localhost:5002
+     - ORDER_API_MICROSERVICE_HTTP_CLIENT_BASE_URL=http://order.api:8080
+     - ASPNETCORE_URLS=http://+:8081
+     - RabbitMQ_HostName=rabbitmq
+     - RabbitMQ_UserName=user
+     - RabbitMQ_Password=password
+     - RabbitMQ_Port=5672
+    networks:
+     - orders_network 
+    depends_on:
+     - order.api
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - orders_network
+
+networks:
+  orders_network:  # Define the custom network

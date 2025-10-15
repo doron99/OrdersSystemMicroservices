@@ -1,0 +1,106 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<h1>Customer and Product Management</h1>
+
+<div>
+    <label for="customer">Choose Customer:</label>
+    <select id="customer">
+       
+    </select>
+</div>
+
+<div>
+    <label for="product">Select Product:</label>
+    <select id="product">
+       
+    </select>
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" placeholder="Quantity" min="1">
+    <button id="addProduct">Add Product</button>
+</div>
+
+<h2>Products List</h2>
+<ul id="productList"></ul>
+
+<button id="clearProducts">Clear All Products</button>
+
+<script>
+    // Sample data for customers and products
+    const customers = [
+        { id: 1, name: "Customer 1" },
+        { id: 2, name: "Customer 2" },
+        { id: 3, name: "Customer 3" }
+    ];
+
+    const products = [
+        { name: "Product A" },
+        { name: "Product B" },
+        { name: "Product C" }
+    ];
+
+    const productList = [];
+    const productListElement = document.getElementById('productList');
+    const customerSelect = document.getElementById('customer');
+    const productSelect = document.getElementById('product');
+
+    // Populate customers in dropdown
+    customers.forEach(customer => {
+        const option = document.createElement('option');
+        option.value = customer.id;
+        option.innerText = customer.name;
+        customerSelect.appendChild(option);
+    });
+
+    // Populate products in dropdown
+    products.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product.name;
+        option.innerText = product.name;
+        productSelect.appendChild(option);
+    });
+
+    document.getElementById('addProduct').addEventListener('click', () => {
+        const productName = productSelect.value;
+        const quantity = parseInt(document.getElementById('quantity').value);
+
+        if (productName && quantity > 0) {
+            const product = { name: productName, quantity: quantity };
+            productList.push(product);
+            renderProductList();
+            clearInputs();
+        } else {
+            alert("Please select a product and enter a valid quantity.");
+        }
+    });
+
+    document.getElementById('clearProducts').addEventListener('click', () => {
+        productList.length = 0;
+        renderProductList();
+    });
+
+    function renderProductList() {
+        productListElement.innerHTML = '';
+        productList.forEach((product, index) => {
+            const li = document.createElement('li');
+            li.innerText = `${product.name} (Quantity: ${product.quantity})`;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerText = 'Delete';
+            deleteButton.onclick = () => {
+                productList.splice(index, 1);
+                renderProductList();
+            };
+
+            li.appendChild(deleteButton);
+            productListElement.appendChild(li);
+        });
+    }
+
+    function clearInputs() {
+        productSelect.value = '';
+        document.getElementById('quantity').value = '';
+    }
+</script>
