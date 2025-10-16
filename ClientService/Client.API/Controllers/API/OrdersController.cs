@@ -15,9 +15,13 @@ namespace Client.API.Controllers.API
             _ordersMicroserviceClient = ordersMicroserviceClient;
         }
         [HttpGet]
-        public async Task<IActionResult> GetOrders()
+        public async Task<IActionResult> GetOrders(
+            int? status = null,
+            Guid? customerId = null,
+            int page = 1,
+            int pageSize = 2)
         {
-            var orders = await _ordersMicroserviceClient.GetOrders();
+            var orders = await _ordersMicroserviceClient.GetOrders(status, customerId, page, pageSize);
             if (orders == null)
             {
                 return BadRequest("error occoured.");

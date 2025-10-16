@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Client.API.Models;
-using System.Text.Json;
+﻿using Client.API.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
+using System.Text.Json;
+using System.Web;
 
 namespace Client.API.HttpClients
 {
@@ -72,12 +73,37 @@ namespace Client.API.HttpClients
             }
 
         }
-        public async Task<List<OrderForResponseWithItems?>> GetOrders()
+        public async Task<List<OrderForResponseWithItems?>> GetOrders(
+            int? status = null,
+            Guid? customerId = null,
+            int page = 1,
+            int pageSize = 2)
         {
             List<OrderForResponseWithItems?> orderForResponseWithItems = null;
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync($"/api/orders");
+                var queryParams = new List<string>();
+
+                if (status.HasValue)
+                {
+                    queryParams.Add($"status={status.Value}");
+                }
+
+                if (customerId.HasValue)
+                {
+                    queryParams.Add($"customerId={customerId.Value}");
+                }
+
+                // Add pagination parameters
+                queryParams.Add($"page={page}");
+                queryParams.Add($"pageSize={pageSize}");
+
+                // Create the final query string
+                string queryString = string.Join("&", queryParams);
+
+                HttpResponseMessage response = await _httpClient.GetAsync($"/api/orders?{queryString}");
+
+                //HttpResponseMessage response = await _httpClient.GetAsync($"/api/orders");
 
                 if (response.IsSuccessStatusCode) {
                     var result = await response.Content.ReadFromJsonAsync<List<OrderForResponseWithItems?>>();

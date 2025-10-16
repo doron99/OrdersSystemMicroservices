@@ -45,7 +45,8 @@
         getOrders();
     });
     function getOrders() {
-        fetch(ordersClientServiceUrl +'/api/orders')
+        console.log('url', ordersClientServiceUrl + '/api/orders?page=1&pageSize=100')
+        fetch(ordersClientServiceUrl + '/api/orders?page=1&pageSize=100')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.statusText);
@@ -68,25 +69,48 @@
         let html = ''; // Initialize an empty string to hold the HTML
 
         data.forEach(order => {
-            const orderItems = order.orderItems.map(oi => {
-                return `<ul>
-                <li>orderItemId:${oi.orderItemId}</li>
-                <li>sku:${oi.sku}</li>
-                <li>quantity:${oi.quantity}</li>
-                <li>unitPrice:${oi.unitPrice}</li>
-                </ul>`
-            });
+            //const orderItems = order.orderItems.map(oi => {
+            //    return `<ul>
+            //    <li>orderItemId:${oi.orderItemId}</li>
+            //    <li>sku:${oi.sku}</li>
+            //    <li>quantity:${oi.quantity}</li>
+            //    <li>unitPrice:${oi.unitPrice}</li>
+            //    </ul>`
+            //});
+            const orderItems = `
+            <table style="border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>Order Item ID</th>
+                        <th>SKU</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.orderItems.map(oi => {
+                            return `
+                        <tr>
+                            <td>${oi.orderItemId}</td>
+                            <td>${oi.sku}</td>
+                            <td>${oi.quantity}</td>
+                            <td>${oi.unitPrice}</td>
+                        </tr>`;
+                        }).join('')}
+                </tbody>
+            </table>
+            `;
             // Prepare the HTML for each order
             html += `<div class="order">
-                <div>ID: ${order.orderId}</div>
+                <div>ID: ${order.orderId}<a href='/home/editorder/${order.orderId}' class="btn btn-warning" type='button' >Edit order</a>
                 <div>customerId: ${order.customerId}</div>
                 <div>totalAmount: ${order.totalAmount}</div>
-                <div>orderItems: ${orderItems.join('')}</div>
+                <div>orderItems: ${orderItems}</div>
 
                 <a class="btn btn-success" onclick="OrderChangeStatus('${order.orderId}','Confirm')">Confirm</a>
                 |
                 <a class="btn btn-danger" onclick="OrderChangeStatus('${order.orderId}','Cancel')">Cancel</a>
-            </div>`;
+            </div></div>`;
         });
 
         // Set the innerHTML of the container once
@@ -113,5 +137,10 @@
         border:1px solid black;
         padding:4px;
         margin-bottom:5px;
+    }
+</style>
+<style>
+    table, th, td {
+        border: 1px solid black;
     }
 </style>
