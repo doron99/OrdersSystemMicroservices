@@ -1,8 +1,11 @@
 ﻿using Client.API.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using static Client.API.Controllers.API.OrdersController;
 
 namespace Client.API.HttpClients
 {
@@ -17,12 +20,12 @@ namespace Client.API.HttpClients
             _httpClient = httpClient;
             _logger = logger;
         }
-        public async Task<object?> AddOrder(Guid customerId)
+        public async Task<object?> AddOrder(AddOrderRequest addOrderRequest)
         {
             //List<OrderForResponseWithItems?> orderForResponseWithItems = null;
             try
             {
-                var jsonContent = JsonSerializer.Serialize(new { customerId = customerId });// orderRequest);
+                var jsonContent = JsonSerializer.Serialize(addOrderRequest);// orderRequest);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await _httpClient.PostAsync($"/api/orders", content);
 
@@ -196,5 +199,29 @@ namespace Client.API.HttpClients
             }
 
         }
+
+        public async Task<object> DeleteOrderItem(string orderId, string orderItemId)
+        {
+            try
+            {
+                HttpResponseMessage response = await _httpClient.DeleteAsync($"/api/orders/{orderId}/items/{orderItemId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //it returns empty result
+                    return new { success = true };
+                }
+                else
+                {
+                    throw new HttpRequestException("Http response status occour:" + response.StatusCode.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching orders.");
+                throw;
+            }
+        }
+        
     }
 }

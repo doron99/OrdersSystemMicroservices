@@ -25,22 +25,7 @@
         </tr>
     </thead>
     <tbody id="orderItemsTable">
-        <tr>
-            <td>Item1</td>
-            <td>Description for Item1</td>
-            <td>20</td>
-            <td>$19</td>
-            <td>$380</td>
-            <td><button class="removeItem">Remove</button></td>
-        </tr>
-        <tr>
-            <td>Item2</td>
-            <td>Description for Item2</td>
-            <td>5</td>
-            <td>$1</td>
-            <td>$5</td>
-            <td><button class="removeItem">Remove</button></td>
-        </tr>
+        
     </tbody>
 </table>
 
@@ -101,20 +86,24 @@
         <td>${item.quantity}</td>
         <td>${item.unitPrice}</td>
         <td>${totalPrice}</td>
-        <td><button class="removeItem">Remove</button></td>
+        <td><button class="removeItem" onclick='onRemoveOrderItem("${order.orderId}","${item.orderItemId}")'>Remove</button></td>
     </tr>
 `;
             $('#orderItemsTable').append(itemHtml);
         });
+    }
+    function onRemoveOrderItem(orderId, orderItemId) {
+        console.log(orderId, orderItemId)
     }
     $(document).ready(function () {
         renderOrderDetails();
         renderOrderItems();
         renderProductSelect();
         // Function to remove an order item
-        $("#orderItemsTable").on("click", ".removeItem", function () {
-            $(this).closest("tr").remove(); // Remove the row
-        });
+        //$("#orderItemsTable").on("click", ".removeItem", function (orderId,orderItemId) {
+        //    removeOrderItem(orderId, orderItemId)
+        //    $(this).closest("tr").remove(); // Remove the row
+        //});
         // Display order items in the table
 
         // Add event listener to the Add Item button
@@ -175,8 +164,24 @@
         }
         );
     });
+    function removeOrderItem(orderId, orderItemId) {
+        $.ajax({
+            type: "DELETE",
+            url: `http://localhost:5002/api/orders/${orderId}/items/${orderItemId}`, // Change to your endpoint
+            contentType: "application/json",
+            success: function (response) {
+                alert('Order item removed successfully!');
+                // Optionally: Clear input fields or update UI
+                console.log('response', response)
+                //addOrderItem(response)
+            },
+            error: function (xhr, status, error) {
+                alert('Error adding order item: ' + error);
+            }
+        });
+    }
     function addOrderItem(orderItem) {
-        const { orderItemDesc, productId, quantity, sku, unitPrice } = orderItem;
+        const { orderItemId,orderItemDesc, productId, quantity, sku, unitPrice } = orderItem;
 
         // Check if SKU and quantity are valid
         if (sku && quantity > 0) {
@@ -185,12 +190,13 @@
             // Create a new row in the order items table
             const newRow = `
             <tr>
+                <td>${orderItemId}</td>
                 <td>${orderItemDesc}</td>
                 <td>${sku}</td>
                 <td>${quantity}</td>
                 <td>${unitPrice.toFixed(2)}</td>
                 <td>${totalPrice}</td>
-                <td><button class="removeItem">Remove</button></td>
+                <td><button class="removeItem" onclick='onRemoveOrderItem("${order.orderId}","${orderItemId}")'>Remove</button></td>
             </tr>
         `;
 

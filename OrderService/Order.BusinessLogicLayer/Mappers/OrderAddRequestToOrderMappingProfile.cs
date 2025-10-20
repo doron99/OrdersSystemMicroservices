@@ -9,7 +9,8 @@ namespace BusinessLogicLayer.Mappers
         {
             CreateMap<OrderAddRequest, DataAccessLayer.Entities.Order>()
                 .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))
-                .ForMember(dest => dest.Id, opt => opt.Ignore());
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.CustomerName))
+                .ForMember(dest => dest.OrderId, opt => opt.Ignore());
 
         }
     }

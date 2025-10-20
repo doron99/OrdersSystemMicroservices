@@ -8,7 +8,8 @@ namespace DataAccessLayer.Entities
 {
     public class OrderForResponseWithItems
     {
-        public Guid OrderId { get; set; }         
+        public Guid OrderId { get; set; }
+        public string CustomerName { get; set; }
         public Guid CustomerId { get; set; }    
         public OrderStatus Status { get; set; }           
         public DateTime CreatedAt { get; set; }   

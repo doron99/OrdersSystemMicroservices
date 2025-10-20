@@ -40,7 +40,7 @@ namespace DataAccessLayer.Repositories
                 throw new Exception("Order not found");
             }
 
-            orderItem.OrderId = orderWithItems.Id;
+            orderItem.OrderId = orderWithItems.OrderId;
             _ctx.Add(orderItem);
             
             await _ctx.SaveChangesAsync();
@@ -56,7 +56,7 @@ namespace DataAccessLayer.Repositories
             var order = await _ctx.Orders
             .AsNoTracking()
             .Include(o => o.OrderItems) // Eager load the OrderItems
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if (order == null)
             {
@@ -67,8 +67,9 @@ namespace DataAccessLayer.Repositories
             // Map the Order entity to OrderResponse
             var orderResponse = new OrderForResponseWithItems
             {
-                OrderId = order.Id,
+                OrderId = order.OrderId,
                 CustomerId = order.CustomerId,
+                CustomerName = order.CustomerName,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt = order.UpdatedAt,
@@ -89,7 +90,7 @@ namespace DataAccessLayer.Repositories
         public async Task<Entities.Order?> OrderGetByIdAsync(Guid id)
         {
             var order = await _ctx.Orders
-                .FirstOrDefaultAsync(o => o.Id == id); // Find the order by Id
+                .FirstOrDefaultAsync(o => o.OrderId == id); // Find the order by Id
 
             if (order == null)
             {
@@ -145,8 +146,9 @@ namespace DataAccessLayer.Repositories
 
             var orderResponses = orders.Select(order => new OrderForResponseWithItems
             {
-                OrderId = order.Id,
+                OrderId = order.OrderId,
                 CustomerId = order.CustomerId,
+                CustomerName = order.CustomerName,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt = order.UpdatedAt,
@@ -189,7 +191,7 @@ namespace DataAccessLayer.Repositories
             catch (DbUpdateConcurrencyException)
             {
                 var entry = await _ctx.Orders.AsNoTracking()
-                    .FirstOrDefaultAsync(o => o.Id == id);
+                    .FirstOrDefaultAsync(o => o.OrderId == id);
                 if (entry != null)
                 {
                     throw new Exception("The order was updated by another user. Please reload and try again. OrderId: "+ id);

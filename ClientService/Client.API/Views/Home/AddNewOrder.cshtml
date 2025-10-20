@@ -94,8 +94,10 @@
     ///##-----create order---------------###############
     function createOrder() {
         const customerId = customerSelect.options[customerSelect.selectedIndex].value;
+        const customerName = customerSelect.options[customerSelect.selectedIndex].innerText;
+
         console.log('customerId', customerId)
-        addOrderApi(customerId);
+        addOrderApi(customerId, customerName);
     }
     function renderProductList() {
         const productListElement = document.getElementById('productList');
@@ -137,13 +139,13 @@
         productSelect.value = '';
         document.getElementById('quantity').value = '';
     }
-    function addOrderApi(orderData) {
+    function addOrderApi(customerId, customerName) {
         fetch('http://localhost:5002/api/orders', {
             method: 'POST', // Specify POST method
             headers: {
                 'Content-Type': 'application/json' // Indicate that you're sending JSON data
             },
-            body: JSON.stringify({customerId: orderData}) // Convert the orderData object to a JSON string
+            body: JSON.stringify({ customerId: customerId, customerName: customerName }) // Convert the orderData object to a JSON string
         })
             .then(response => {
                 if (!response.ok) {

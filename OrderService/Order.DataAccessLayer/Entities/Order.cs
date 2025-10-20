@@ -17,11 +17,12 @@ namespace DataAccessLayer.Entities
     public class Order
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
 
         [Required]
         public Guid CustomerId { get; set; }
-
+        [Required]
+        public string CustomerName { get; set; }
         [Required]
         [EnumDataType(typeof(OrderStatus))]
         public OrderStatus Status { get; set; }
@@ -41,7 +42,7 @@ namespace DataAccessLayer.Entities
         public virtual ICollection<OrderItem> OrderItems { get; set; }
         public Order()
         {
-            Id = Guid.NewGuid(); // Generate a new GUID
+            OrderId = Guid.NewGuid(); // Generate a new GUID
             CreatedAt = DateTime.UtcNow; // Set creation date
             UpdatedAt = DateTime.UtcNow; // Set updated date
             OrderItems = new List<OrderItem>();

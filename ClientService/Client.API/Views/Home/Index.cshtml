@@ -104,6 +104,9 @@
             html += `<div class="order">
                 <div>ID: ${order.orderId}<a href='/home/editorder/${order.orderId}' class="btn btn-warning" type='button' >Edit order</a>
                 <div>customerId: ${order.customerId}</div>
+                <div>customerName: ${order.customerName}</div>
+                <div>createdAt: ${formatDate(order.createdAt)}</div>
+
                 <div>totalAmount: ${order.totalAmount}</div>
                 <div>orderItems: ${orderItems}</div>
 
@@ -130,6 +133,13 @@
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
             });
+    }
+    function formatDate(strDatetime) {
+        const date = new Date(strDatetime);
+
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+        const formattedDate = date.toLocaleString('en-GB', options).replace(',', '').replace(' ', ' ');
+        return formattedDate;
     }
 </script>
 <style>

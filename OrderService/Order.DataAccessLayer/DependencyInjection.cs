@@ -44,13 +44,13 @@ namespace DataAccessLayer
                 //seed first data
                 if (!await context.Orders.AnyAsync())
                 {
-                    Order o = await ordersRepo.OrderAddAsync(new Order { CustomerId = Guid.NewGuid() });
-                    await ordersRepo.OrderAddItemAsync(o.Id, new OrderItem { OrderId = o.Id,OrderItemDesc="test12", ProductId=Guid.NewGuid(),Sku = "Item1", UnitPrice = 19, Quantity = 20 });
-                    await ordersRepo.OrderAddItemAsync(o.Id, new OrderItem { OrderId = o.Id, OrderItemDesc = "test13", ProductId = Guid.NewGuid(), Sku = "Item2", UnitPrice = 1, Quantity = 5 });
+                    Order o = await ordersRepo.OrderAddAsync(new Order { CustomerId = Guid.NewGuid(),CustomerName="חברה לדוגמה 1" });
+                    await ordersRepo.OrderAddItemAsync(o.OrderId, new OrderItem { OrderId = o.OrderId, OrderItemDesc="test12", ProductId=Guid.NewGuid(),Sku = "Item1", UnitPrice = 19, Quantity = 20 });
+                    await ordersRepo.OrderAddItemAsync(o.OrderId, new OrderItem { OrderId = o.OrderId, OrderItemDesc = "test13", ProductId = Guid.NewGuid(), Sku = "Item2", UnitPrice = 1, Quantity = 5 });
 
-                    Order o2 = await ordersRepo.OrderAddAsync(new Order { CustomerId = Guid.NewGuid() });
-                    await ordersRepo.OrderAddItemAsync(o2.Id, new OrderItem { OrderId = o2.Id, OrderItemDesc = "test12", ProductId = Guid.NewGuid(), Sku = "Item3", UnitPrice = 45, Quantity = 200 });
-                    await ordersRepo.OrderAddItemAsync(o2.Id, new OrderItem { OrderId = o2.Id, OrderItemDesc = "test12", ProductId = Guid.NewGuid(), Sku = "Item4", UnitPrice = 30, Quantity = 55 });
+                    Order o2 = await ordersRepo.OrderAddAsync(new Order { CustomerId = Guid.NewGuid(),CustomerName="חברה לדוגמה 2" });
+                    await ordersRepo.OrderAddItemAsync(o2.OrderId, new OrderItem { OrderId = o2.OrderId, OrderItemDesc = "test12", ProductId = Guid.NewGuid(), Sku = "Item3", UnitPrice = 45, Quantity = 200 });
+                    await ordersRepo.OrderAddItemAsync(o2.OrderId, new OrderItem { OrderId = o2.OrderId, OrderItemDesc = "test12", ProductId = Guid.NewGuid(), Sku = "Item4", UnitPrice = 30, Quantity = 55 });
 
                 }
 

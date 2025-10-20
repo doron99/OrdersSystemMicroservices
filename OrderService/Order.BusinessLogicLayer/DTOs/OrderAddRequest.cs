@@ -11,5 +11,6 @@ namespace BusinessLogicLayer.DTOs
     {
         [Required(ErrorMessage = "CustomerId is required.")]
         public string CustomerId { get; set; }
+        public string CustomerName { get; set; }
     }
 }

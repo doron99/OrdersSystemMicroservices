@@ -11,10 +11,10 @@ namespace BusinessLogicLayer.DTOs
     public class OrderWithItemsReponse
     {
 
-        public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
 
         public string CustomerId { get; set; }
-
+        public string CustomerName { get; set; }
         [EnumDataType(typeof(OrderStatus))]
         public OrderStatus Status { get; set; }
 

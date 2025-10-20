@@ -51,11 +51,12 @@ namespace Client.API.Controllers.API
         public class AddOrderRequest
         {
             public Guid CustomerId { get; set; }
+            public string CustomerName { get; set; }
         }
         [HttpPost]
         public async Task<IActionResult> AddOrder(AddOrderRequest addOrderRequest)
         {
-            var res = await _ordersMicroserviceClient.AddOrder(addOrderRequest.CustomerId);
+            var res = await _ordersMicroserviceClient.AddOrder(addOrderRequest);
             if (res == null)
             {
                 return BadRequest("error occoured.");
@@ -63,9 +64,19 @@ namespace Client.API.Controllers.API
             return Ok(res);
         }
         [HttpPost("{id}/items")]
-        public async Task<IActionResult> AddOrder(Guid id,object addOrderItemRequest)
+        public async Task<IActionResult> AddOrderItem(Guid id,object addOrderItemRequest)
         {
             var res = await _ordersMicroserviceClient.AddOrderItem(id,addOrderItemRequest);
+            if (res == null)
+            {
+                return BadRequest("error occoured.");
+            }
+            return Ok(res);
+        }
+        [HttpDelete("{orderId}/items/{orderItemId}")]
+        public async Task<IActionResult> DeleteOrderItem(string orderId, string orderItemId)
+        {
+            var res = await _ordersMicroserviceClient.DeleteOrderItem(orderId,orderItemId);
             if (res == null)
             {
                 return BadRequest("error occoured.");
