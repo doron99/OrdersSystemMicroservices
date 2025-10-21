@@ -45,5 +45,24 @@ namespace DataAccessLayer.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<List<Product?>> GetProductsByListOfSkus(List<string> skus)
+        {
+            // Check if there are products to look for
+            //if (productIds == null || !productIds.Any())
+            //{
+            //    return new List<Product>();
+            //}
+
+            //// Extract ProductIds from the list of ProductToApprove
+            //var productIds = productsToApprove.Select(p => p.ProductId).ToList();
+
+            // Query products from the database that are in the provided list
+
+            return await _ctx.Products
+                .Where(p => skus.Contains(p.Sku))
+                .ToListAsync();
+        }
+
+      
     }
 }

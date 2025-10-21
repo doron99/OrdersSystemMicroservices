@@ -1,6 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    @using Microsoft.Extensions.Configuration
+    @inject IConfiguration Configuration
+
+
 }
 <h1>@ViewData["Title"]</h1>
+<p><strong>ORDER_API_MICROSERVICE_BASE_URL:</strong> @Configuration["ORDER_API_MICROSERVICE_BASE_URL"]</p>
+<p><strong>ORDER_CLIENT_MICROSERVICE_BASE_URL:</strong> @Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]</p>
 
-<p>Use this page to detail your site's privacy policy.</p>
+

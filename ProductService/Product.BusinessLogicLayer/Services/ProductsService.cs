@@ -16,18 +16,25 @@ namespace BusinessLogicLayer.Services
             _productsRepo = productsRepo;
             _rabbitMQPublisher = rabbitMQPublisher;
         }
-        public async Task<List<Product?>> GetAll()
+        public async Task<List<DataAccessLayer.Entities.Product?>> GetAll()
         {
             var products = await _productsRepo.GetAllAsync();
       
-            string routingKey = "product.all.retrieved";
-            var message1 = new
-            {
-                products = products,
-            };
-            var message = JsonConvert.SerializeObject(message1);
+            //string routingKey = "product.all.retrieved";
+            //var message1 = new
+            //{
+            //    products = products,
+            //};
+            //var message = JsonConvert.SerializeObject(message1);
 
-            _rabbitMQPublisher.Publish<object>(routingKey, message);
+            //_rabbitMQPublisher.Publish<object>(routingKey, message);
+            return products;
+
+        }
+        public async Task<List<Product>> GetProductsByListOfSkus(List<string> skus)
+        {
+            var products = await _productsRepo.GetProductsByListOfSkus(skus);
+      
             return products;
 
         }

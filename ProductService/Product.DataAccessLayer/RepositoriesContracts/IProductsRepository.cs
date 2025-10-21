@@ -14,5 +14,6 @@ namespace DataAccessLayer.RepositoriesContracts
         Task<Product?> GetByIdAsync(Guid id);
         Task<Product?> UpdateAsync(Product product);
         Task<bool> DeleteAsync(Guid id);
+        Task<List<Product?>> GetProductsByListOfSkus(List<string> skus);
     }
 }

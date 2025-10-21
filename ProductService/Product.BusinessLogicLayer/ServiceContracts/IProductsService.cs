@@ -5,6 +5,7 @@ namespace BusinessLogicLayer.ServiceContracts
 {
     public interface IProductsService
     {
-        Task<List<Product?>> GetAll();
+        Task<List<DataAccessLayer.Entities.Product?>> GetAll();
+        Task<List<Product>> GetProductsByListOfSkus(List<string> skus);
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
 using System.Text.Json;
 using System.Web;
-using static Client.API.Controllers.API.OrdersController;
+using static Client.API.Controllers.API._OrdersController;
 
 namespace Client.API.HttpClients
 {

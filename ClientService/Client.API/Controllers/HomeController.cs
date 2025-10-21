@@ -26,11 +26,7 @@ namespace Client.API.Controllers
         {
 
            
-            string ordersServiceUrl = Environment.GetEnvironmentVariable("ORDER_API_MICROSERVICE_BASE_URL") ?? _config["Urls:ORDER_API_MICROSERVICE_BASE_URL"]!;
-            string ordersClientServiceUrl = Environment.GetEnvironmentVariable("ORDER_CLIENT_MICROSERVICE_BASE_URL") ?? _config["Urls:ORDER_CLIENT_MICROSERVICE_BASE_URL"]!;
             ViewData["Customers"] = FakeCustomerService.GetCustomers();
-            ViewData["OrdersServiceUrl"] = ordersServiceUrl;
-            ViewData["OrdersClientServiceUrl"] = ordersClientServiceUrl;
             return View();
         }
 
@@ -38,6 +34,7 @@ namespace Client.API.Controllers
         {
             return View();
         }
+        [HttpGet("orders/add")]
         public async Task<IActionResult> AddNewOrder()
         {
             ViewData["Customers"] = FakeCustomerService.GetCustomers();
@@ -45,7 +42,7 @@ namespace Client.API.Controllers
 
             return View();
         }
-        [HttpGet("home/editorder/{id}")]
+        [HttpGet("orders/edit/{id}")]
         public async Task<IActionResult> EditOrder(string id)
         {
             ViewData["Customers"] = FakeCustomerService.GetCustomers();

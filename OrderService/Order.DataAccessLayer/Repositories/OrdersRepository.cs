@@ -90,7 +90,7 @@ namespace DataAccessLayer.Repositories
         public async Task<Entities.Order?> OrderGetByIdAsync(Guid id)
         {
             var order = await _ctx.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == id); // Find the order by Id
+                .FirstOrDefaultAsync(o => o.OrderId.ToString().ToLower() == id.ToString().ToLower()); // Find the order by Id
 
             if (order == null)
             {
@@ -100,17 +100,30 @@ namespace DataAccessLayer.Repositories
 
             return order;
         }
+        public async Task<Entities.Order?> OrderWithItemsGetByIdAsync(Guid id)
+        {
+            var order = await _ctx.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.OrderId.ToString().ToLower() == id.ToString().ToLower()); // Find the order by Id
 
+            if (order == null)
+            {
+                _logger.LogInformation("Order not found");
+                throw new Exception("Order not found");
+            }
+
+            return order;
+        }
         public async Task<bool> OrderDeleteItemAsync(Guid orderId, Guid itemId)
         {
-            var orderWithItems = await OrderGetByIdAsync(orderId);
+            var orderWithItems = await OrderWithItemsGetByIdAsync(orderId);
             if (orderWithItems == null)
             {
                 _logger.LogInformation("Order not found");
                 throw new Exception("Order not found");
             }
 
-            var orderItem = orderWithItems.OrderItems.FirstOrDefault(oi => oi.OrderItemId == itemId);
+            var orderItem = orderWithItems.OrderItems.FirstOrDefault(oi => oi.OrderItemId.ToString().ToLower() == itemId.ToString().ToLower());
             if (orderItem == null)
             {
                 _logger.LogInformation("Order item not found");

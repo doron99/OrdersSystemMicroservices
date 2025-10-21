@@ -25,11 +25,11 @@ namespace DataAccessLayer.RepositoryContracts
         Task<bool> OrderDeleteItemAsync(Guid orderId, Guid itemId);
         // GET / api / orders ? status = &customerId = &page = &pageSize =
         Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, Guid? customerId, int page, int pageSize);
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
     }
 }

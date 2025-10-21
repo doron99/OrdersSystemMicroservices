@@ -6,5 +6,7 @@
         public const string ReceiveOrderCreate = "ReceiveOrderCreate";
         public const string ReceiveOrderItemDeleted = "ReceiveOrderItemDeleted";
         public const string ReceiveOrderItemCreate = "ReceiveOrderItemCreate";
+        public const string ReceiveOrderConfirmed = "ReceiveOrderConfirmed";
+
     }
 }

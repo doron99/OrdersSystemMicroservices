@@ -4,13 +4,13 @@ using Client.API.HttpClients;
 
 namespace Client.API.Controllers.API
 {
-    [Route("api/[controller]")]
+    [Route("api/Orders")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class _OrdersController : ControllerBase
     {
         private readonly OrdersMicroserviceClient _ordersMicroserviceClient;
 
-        public OrdersController(OrdersMicroserviceClient ordersMicroserviceClient)
+        public _OrdersController(OrdersMicroserviceClient ordersMicroserviceClient)
         {
             _ordersMicroserviceClient = ordersMicroserviceClient;
         }

@@ -35,6 +35,20 @@ namespace Order.API.Controllers
             return Ok(orderCreated);
             //return CreatedAtAction(nameof(GetOrderById), new { id = orderCreated.Id }, orderCreated);
         }
+        [HttpPost("testOnly")]
+        public async Task<IActionResult> testOnly([FromBody] dynamic obj)
+        {
+            string d = obj["res"];
+            if (d == "") {
+                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderConfirmed, "Stock is ok", OrderStatus.Confirmed);
+            } else {
+                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderConfirmed, "Stock is not ok", OrderStatus.Confirmed);
+            }
+
+
+
+            return Ok("Order success");
+        }
         [HttpPost("{id}/items")]
         //add order item
         public async Task<IActionResult> AddOrderItem(Guid id,[FromBody] OrderItemAddRequest orderItemRequest)

@@ -6,6 +6,8 @@
     var jsonOrder = Json.Serialize(order); // Serialize customers into JSON
     var products = ViewData["Products"] as List<Client.API.Dtos.ProductDto>; // Adjust the type as necessary
     var jsonProducts = Json.Serialize(products); // Serialize customers into JSON
+    @using Microsoft.Extensions.Configuration
+    @inject IConfiguration Configuration
 }
 <h1>Order Details</h1>
 
@@ -16,8 +18,9 @@
 <table>
     <thead>
         <tr>
-            <th>Description</th>
+            <th>Id</th>
             <th>SKU</th>
+            <th>Description</th>
             <th>Quantity</th>
             <th>Unit Price</th>
             <th>Total Price</th>
@@ -25,7 +28,6 @@
         </tr>
     </thead>
     <tbody id="orderItemsTable">
-        
     </tbody>
 </table>
 
@@ -72,7 +74,7 @@
      <p><strong>Status:</strong> ${order.status}</p>
      <p><strong>Created At:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
      <p><strong>Updated At:</strong> ${new Date(order.updatedAt).toLocaleString()}</p>
-     <p><strong>Total Amount:</strong> ${order.totalAmount}</p>
+     <p><strong>Total Amount:</strong><span id="totalAmount">${order.totalAmount}</span></p>
  `;
         $('#orderDetails').html(orderDetailsHtml);
     }
@@ -80,20 +82,42 @@
         order.orderItems.forEach(item => {
             const totalPrice = (item.quantity * item.unitPrice).toFixed(2);
             const itemHtml = `
-    <tr>
+    <tr  id="item-${item.orderItemId}">
+        <td>${item.orderItemId}</td>
+
         <td>${item.sku}</td>
         <td>${item.orderItemDesc || 'N/A'}</td>
         <td>${item.quantity}</td>
         <td>${item.unitPrice}</td>
         <td>${totalPrice}</td>
-        <td><button class="removeItem" onclick='onRemoveOrderItem("${order.orderId}","${item.orderItemId}")'>Remove</button></td>
+        <td><button class="removeItem" onclick='onRemoveOrderItem("${order.orderId}","${item.orderItemId}","${totalPrice}")'>Remove</button></td>
     </tr>
 `;
             $('#orderItemsTable').append(itemHtml);
         });
     }
-    function onRemoveOrderItem(orderId, orderItemId) {
-        console.log(orderId, orderItemId)
+    function onRemoveOrderItem(orderId, orderItemId,strTotalPrice) {
+        console.log(orderId, orderItemId, strTotalPrice)
+
+        $.ajax({
+            type: "DELETE",
+            url: `${"@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]"}/api/orders/${orderId}/items/${orderItemId}`, // Change to your endpoint
+            contentType: "application/json",
+            success: function (response) {
+                toastr.success(`Order item removed successfully!`, 'notify');
+                // Optionally: Clear input fields or update UI
+                console.log('response', response)
+
+                const totalAmountEl = document.getElementById('totalAmount');
+                const intTotalAmount = +totalAmountEl.textContent
+                totalAmountEl.innerText = intTotalAmount - (+strTotalPrice).toFixed(2)
+                console.log('item id to remove:', `item-${orderItemId}`)
+                $(`#item-${orderItemId}`).remove();
+            },
+            error: function (xhr, status, error) {
+                alert('Error adding order item: ' + error);
+            }
+        });
     }
     $(document).ready(function () {
         renderOrderDetails();
@@ -112,9 +136,26 @@
             const productDesc = selectedProduct.text();
             const productId = selectedProduct.val();
 
-            const sku = selectedProduct.data("sku"); // Get the price from data attribute
+            const sku = selectedProduct.data("sku");
             const unitPrice = parseFloat(selectedProduct.data("price")); // Get the price from data attribute
             const quantity = parseInt($("#newItemQuantity").val());
+
+            //---------check if sku already exists - do not add same sku----//
+            const skuCells = document.querySelectorAll('#orderItemsTable td:nth-child(2)');
+            let isSkuAlreadyExists = false;
+            skuCells.forEach(cell => {
+                const skuInCell = cell.innerText; // Get the text content of each SKU cell
+                if (skuInCell) {
+                    if (sku === skuInCell) {
+                        alert('Please remove the item first, then add a new one with the updated quantity.');
+                        isSkuAlreadyExists = true;
+                    }
+                }
+            });
+            if (isSkuAlreadyExists == true) {
+                return;
+            }
+
 
             const orderItem = {
                 orderItemDesc: productDesc,
@@ -124,79 +165,46 @@
                 unitPrice: parseFloat(unitPrice) // Ensure it is a float
             };
             console.log(orderItem);
-            //return;
 
             // Send POST request to add the order item
             $.ajax({
                 type: "POST",
-                url: `http://localhost:5002/api/orders/${order.orderId}/items/`, // Change to your endpoint
+                url: `${"@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]"}/api/orders/${order.orderId}/items/`, // Change to your endpoint
                 contentType: "application/json",
                 data: JSON.stringify(orderItem),
                 success: function (response) {
-                    //alert('Order item added successfully!');
+                    toastr.success(`Order item added successfully!`, 'notify');
+
                     // Optionally: Clear input fields or update UI
                     console.log('response', response)
-                    addOrderItem(response)
+                    renderNewOrderItem(response)
                 },
                 error: function (xhr, status, error) {
                     alert('Error adding order item: ' + error);
                 }
             });
-
-
-            //if (sku && quantity > 0) {
-            //    const totalPrice = (quantity * unitPrice).toFixed(2);
-
-            //    // Create a new row in the order items table
-            //    const newRow = `
-            //            <tr>
-            //                <td>${productDesc}</td>
-            //                <td>${sku}</td>
-            //                <td>${quantity}</td>
-            //                <td>${unitPrice}</td>
-            //                <td>${totalPrice}</td>
-            //                <td><button class="removeItem">Remove</button></td>
-            //            </tr>
-            //        `;
-
-            //    $("#orderItemsTable").append(newRow); // Add the new row to the table
-            //}
         }
         );
     });
-    function removeOrderItem(orderId, orderItemId) {
-        $.ajax({
-            type: "DELETE",
-            url: `http://localhost:5002/api/orders/${orderId}/items/${orderItemId}`, // Change to your endpoint
-            contentType: "application/json",
-            success: function (response) {
-                alert('Order item removed successfully!');
-                // Optionally: Clear input fields or update UI
-                console.log('response', response)
-                //addOrderItem(response)
-            },
-            error: function (xhr, status, error) {
-                alert('Error adding order item: ' + error);
-            }
-        });
-    }
-    function addOrderItem(orderItem) {
+
+    function renderNewOrderItem(orderItem) {
         const { orderItemId,orderItemDesc, productId, quantity, sku, unitPrice } = orderItem;
 
         // Check if SKU and quantity are valid
         if (sku && quantity > 0) {
             const totalPrice = (quantity * unitPrice).toFixed(2);
-
+            const totalAmountEl = document.getElementById('totalAmount');
+            totalAmountEl.innerText = ((+totalAmountEl.textContent) + (+totalPrice)).toFixed(2)
             // Create a new row in the order items table
             const newRow = `
-            <tr>
+            <tr id="item-${orderItemId}">
                 <td>${orderItemId}</td>
-                <td>${orderItemDesc}</td>
                 <td>${sku}</td>
+                <td>${orderItemDesc}</td>
                 <td>${quantity}</td>
                 <td>${unitPrice.toFixed(2)}</td>
                 <td>${totalPrice}</td>
-                <td><button class="removeItem" onclick='onRemoveOrderItem("${order.orderId}","${orderItemId}")'>Remove</button></td>
+                <td><button class="removeItem" onclick='onRemoveOrderItem("${order.orderId}","${orderItemId}","${totalPrice}")'>Remove</button></td>
             </tr>
         `;
 
@@ -213,6 +221,25 @@
         console.log(order)
 </script>
 
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    button {
+        margin-left: 10px;
+    }
+</style>
 
 

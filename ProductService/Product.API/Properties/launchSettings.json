@@ -5,6 +5,8 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
+        "ORDER_API_MICROSERVICE_BASE_URL": "http://localhost:5001",
+        "ORDER_CLIENT_MICROSERVICE_BASE_URL": "http://localhost:5002",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "MSSQL_DATABASE": "ProductsDB",
         "MSSQL_HOST": "localhost",

@@ -9,7 +9,7 @@ namespace BusinessLogicLayer.Mappers
         public OrderToOrderResponseMappingProfile()
         {
            
-            CreateMap<Order, OrderReponse>()
+            CreateMap<DataAccessLayer.Entities.Order, OrderReponse>()
                 .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.CustomerName))
                 .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.OrderId))

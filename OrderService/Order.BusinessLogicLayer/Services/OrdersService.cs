@@ -4,6 +4,8 @@ using BusinessLogicLayer.RabbitMQ;
 using BusinessLogicLayer.ServiceContracts;
 using DataAccessLayer.Entities;
 using DataAccessLayer.RepositoryContracts;
+using Newtonsoft.Json;
+using Order.BusinessLogicLayer.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +28,7 @@ namespace BusinessLogicLayer.Services
         }
         public async Task<OrderReponse?> OrderAddAsync(OrderAddRequest orderRequest)
         {
-            Order orderFromRequest = _mapper.Map<Order>(orderRequest);
+            DataAccessLayer.Entities.Order orderFromRequest = _mapper.Map<DataAccessLayer.Entities.Order>(orderRequest);
 
             var orderCreated = await _ordersRepo.OrderAddAsync(orderFromRequest);
 
@@ -53,15 +55,41 @@ namespace BusinessLogicLayer.Services
         }
         public async Task<bool> OrderChangeStatusAsync(Guid id, OrderStatus orderStatus)
         {
-            bool isChanged = await _ordersRepo.OrderChangeStatusAsync(id, orderStatus);
-            string routingKey = "order.status.changed";
-            var message = new
+            var order = await _ordersRepo.OrderGetByIdWithItemsAsync(id);
+            if (order == null)
             {
-                OrderId = id,
-                NewStatus = orderStatus.ToString()
+                throw new Exception("Order not found");
+            }
+            var products = order.OrderItems.Select(oi => new
+            {
+                Sku = oi.Sku,
+                quantity = oi.Quantity
+            }).ToList();
+           
+
+            string routingKey = "inventory.check.approve.retrieved";
+            OrderToApprove ota = new OrderToApprove
+            {
+                OrderId = order.OrderId,
+                Products = products.Select(p => new ProductToApprove
+                {
+                    Sku = p.Sku,
+                    Quantity = p.quantity
+                }).ToList()
             };
-            _rabbitMQPublisher.Publish<object>(routingKey, message);
-            return isChanged;
+            //var message1 = new
+            //{
+            //    OrderId = order.OrderId,
+            //    Products = products,
+            //};
+            var message = JsonConvert.SerializeObject(ota);
+
+            _rabbitMQPublisher.Publish<OrderToApprove>(routingKey, ota);
+            return true;
+
+            //bool isChanged = await _ordersRepo.OrderChangeStatusAsync(id, orderStatus);
+
+            //return isChanged;
         }
         public async Task<OrderForResponseWithItems?> OrderGetByIdAsync(Guid id)
         {

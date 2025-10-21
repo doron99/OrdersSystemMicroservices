@@ -1,5 +1,6 @@
 ﻿@{
-   
+    @using Microsoft.Extensions.Configuration
+    @inject IConfiguration Configuration
 }
 
 <div class="text-center">
@@ -8,21 +9,21 @@
     on Order status changed, and it will be notify in this page.
 </div>
 <h3>List of Orders </h3>
-<div id="ordersContainer"></div>
+<div id="ordersContainer" class="grid-container" style=""></div>
+
+
+
+
+
 
 
 
 <script>
-    var ordersServiceUrl = '@ViewData["OrdersServiceUrl"]';
-    var ordersClientServiceUrl = '@ViewData["OrdersClientServiceUrl"]';
-
-    console.log('ordersServiceUrl', ordersServiceUrl);
-    console.log('ordersClientServiceUrl', ordersClientServiceUrl);
 
     $(document).ready(function () {
         // Create a connection to the hub
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl(ordersServiceUrl +"/orderHub")
+            .withUrl("@Configuration["ORDER_API_MICROSERVICE_BASE_URL"]" +"/orderHub")
             .build();
 
         //handle incoming messages
@@ -35,6 +36,18 @@
                 //cancelled
                 toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
             }
+            getOrders();
+        });
+        connection.on("ReceiveOrderConfirmed", (orderId, status) => {
+            console.log(`Order ${orderId} status updated to: ${status}`);
+            if (status == 1) {
+                //confirm
+                toastr.success(`Order ${orderId} status has been confirmed`, 'SignalR notify');
+            } else {
+                //cancelled
+                toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
+            }
+            getOrders();
         });
 
         // Start the connection
@@ -45,8 +58,8 @@
         getOrders();
     });
     function getOrders() {
-        console.log('url', ordersClientServiceUrl + '/api/orders?page=1&pageSize=100')
-        fetch(ordersClientServiceUrl + '/api/orders?page=1&pageSize=100')
+        console.log('url', "@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]" + '/api/orders?page=1&pageSize=100')
+        fetch("@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]" + '/api/orders?page=1&pageSize=100')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.statusText);
@@ -69,14 +82,8 @@
         let html = ''; // Initialize an empty string to hold the HTML
 
         data.forEach(order => {
-            //const orderItems = order.orderItems.map(oi => {
-            //    return `<ul>
-            //    <li>orderItemId:${oi.orderItemId}</li>
-            //    <li>sku:${oi.sku}</li>
-            //    <li>quantity:${oi.quantity}</li>
-            //    <li>unitPrice:${oi.unitPrice}</li>
-            //    </ul>`
-            //});
+
+
             const orderItems = `
             <table style="border-collapse: collapse;">
                 <thead>
@@ -94,25 +101,36 @@
                             <td>${oi.orderItemId}</td>
                             <td>${oi.sku}</td>
                             <td>${oi.quantity}</td>
-                            <td>${oi.unitPrice}</td>
+                            <td>${oi.unitPrice}$</td>
                         </tr>`;
-                        }).join('')}
+                    }).join('')}
+                         <tr class="font-weight-bold">
+                         <td colspan="3" class="text-right">Total Amount:</td>
+                             <td>${order.totalAmount}$</td>
+                         </tr>
                 </tbody>
             </table>
             `;
+            const orderStatusBadge = order.status == 0
+                ? '<span class="badge alert-primary">Waiting</span>'
+                : order.status == 1 ? '<span class="badge alert-success">Confirmed</span>'
+                    : '<span class="badge alert-danger">canceled</span>'
+
             // Prepare the HTML for each order
-            html += `<div class="order">
-                <div>ID: ${order.orderId}<a href='/home/editorder/${order.orderId}' class="btn btn-warning" type='button' >Edit order</a>
-                <div>customerId: ${order.customerId}</div>
-                <div>customerName: ${order.customerName}</div>
-                <div>createdAt: ${formatDate(order.createdAt)}</div>
+            html += `<div class="order item">
+                <div><strong>ID:</strong> ${order.orderId}
+                <div><strong>customerId:</strong> ${order.customerId}</div>
+                <div><strong>customerName:</strong> ${order.customerName}</div>
+                <div><strong>createdAt:</strong> ${formatDate(order.createdAt)}</div>
+                <div><strong>status:</strong>${orderStatusBadge}</div>
 
-                <div>totalAmount: ${order.totalAmount}</div>
-                <div>orderItems: ${orderItems}</div>
-
-                <a class="btn btn-success" onclick="OrderChangeStatus('${order.orderId}','Confirm')">Confirm</a>
+                <div><strong>Order Items</strong> ${orderItems}</div>
+                <div style="margin-bottom:20px;margin-top:20px; ">
+                    <a href='/orders/edit/${order.orderId}' class="btn btn-warning btn-sm" type='button' >Edit order</a>
+                </div>
+                <a class="btn btn-success btn-sm" onclick="OrderChangeStatus('${order.orderId}','Confirm')">Confirm</a>
                 |
-                <a class="btn btn-danger" onclick="OrderChangeStatus('${order.orderId}','Cancel')">Cancel</a>
+                <a class="btn btn-danger btn-sm" onclick="OrderChangeStatus('${order.orderId}','Cancel')">Cancel</a>
             </div></div>`;
         });
 
@@ -142,15 +160,71 @@
         return formattedDate;
     }
 </script>
+
+
 <style>
-    .order {
-        border:1px solid black;
-        padding:4px;
-        margin-bottom:5px;
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
     }
-</style>
-<style>
-    table, th, td {
-        border: 1px solid black;
+
+    .container {
+        /* width: 80%;
+            max-width: 800px;*/
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .order {
+        border: 1px solid #f2f2f2;
+        padding: 4px;
+        margin-bottom: 5px;
+    }
+
+    h1, h2 {
+        color: #333;
+    }
+
+    .main-content {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .addresses {
+        width: 60%;
+    }
+
+    .order-items {
+        width: 35%;
+        margin-left: 20px; /* Space between summary and order items */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Two equal columns */
+        gap: 15px; /* Gap between the columns */
+    }
+
+    .item {
+        padding: 20px; /* Add some padding */
     }
 </style>

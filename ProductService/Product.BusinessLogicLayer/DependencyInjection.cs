@@ -20,6 +20,17 @@ namespace BusinessLogicLayer
 
             services.AddScoped<IProductsService, ProductsService>();
             services.AddTransient<IRabbitMQPublisher, RabbitMQPublisher>();
+            services.AddHostedService<RabbitMQInventoryCheckAndApproveReceivedHostedService>();
+            
+            //services.AddHostedService(provider =>
+            //{
+            //    // Create a scope here to resolve the hosted service
+            //    var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
+            //    using (var scope = scopeFactory.CreateScope())
+            //    {
+            //        return scope.ServiceProvider.GetRequiredService<RabbitMQInventoryCheckAndApproveReceivedHostedService>();
+            //    }
+            //});
             return services;
         }
     }
