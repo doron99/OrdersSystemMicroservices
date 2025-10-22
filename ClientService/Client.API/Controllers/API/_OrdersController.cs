@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Client.API.HttpClients;
+using Client.API.Dtos;
 
 namespace Client.API.Controllers.API
 {
@@ -48,11 +48,7 @@ namespace Client.API.Controllers.API
             }
             return Ok(res);
         }
-        public class AddOrderRequest
-        {
-            public Guid CustomerId { get; set; }
-            public string CustomerName { get; set; }
-        }
+        
         [HttpPost]
         public async Task<IActionResult> AddOrder(AddOrderRequest addOrderRequest)
         {

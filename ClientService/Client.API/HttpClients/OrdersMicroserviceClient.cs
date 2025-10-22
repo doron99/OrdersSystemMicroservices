@@ -1,11 +1,7 @@
-﻿using Client.API.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Client.API.Dtos;
+using Client.API.Models;
 using System.Text;
 using System.Text.Json;
-using System.Web;
-using static Client.API.Controllers.API._OrdersController;
 
 namespace Client.API.HttpClients
 {
@@ -22,17 +18,15 @@ namespace Client.API.HttpClients
         }
         public async Task<object?> AddOrder(AddOrderRequest addOrderRequest)
         {
-            //List<OrderForResponseWithItems?> orderForResponseWithItems = null;
             try
             {
-                var jsonContent = JsonSerializer.Serialize(addOrderRequest);// orderRequest);
+                var jsonContent = JsonSerializer.Serialize(addOrderRequest);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await _httpClient.PostAsync($"/api/orders", content);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<object?>();// List<OrderForResponseWithItems?>>();
-                    //orderForResponseWithItems = result ?? new List<OrderForResponseWithItems?>();
+                    var result = await response.Content.ReadFromJsonAsync<object?>();
                     var res = result ?? new { Error = "Error occoured" };
                     return res;
                 }
@@ -50,17 +44,15 @@ namespace Client.API.HttpClients
         }
         public async Task<object?> AddOrderItem(Guid orderId, object orderItem)
         {
-            //List<OrderForResponseWithItems?> orderForResponseWithItems = null;
             try
             {
-                var jsonContent = JsonSerializer.Serialize(orderItem);// orderRequest);
+                var jsonContent = JsonSerializer.Serialize(orderItem);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await _httpClient.PostAsync($"/api/orders/{orderId}/items", content);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<object?>();// List<OrderForResponseWithItems?>>();
-                    //orderForResponseWithItems = result ?? new List<OrderForResponseWithItems?>();
                     var res = result ?? new { Error = "Error occoured" };
                     return res;
                 }
@@ -106,8 +98,6 @@ namespace Client.API.HttpClients
 
                 HttpResponseMessage response = await _httpClient.GetAsync($"/api/orders?{queryString}");
 
-                //HttpResponseMessage response = await _httpClient.GetAsync($"/api/orders");
-
                 if (response.IsSuccessStatusCode) {
                     var result = await response.Content.ReadFromJsonAsync<List<OrderForResponseWithItems?>>();
                     orderForResponseWithItems = result ?? new List<OrderForResponseWithItems?>();
@@ -135,8 +125,6 @@ namespace Client.API.HttpClients
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<object?>();
-                    //orderForResponseWithItems = result;// new List<OrderForResponseWithItems?>();
-
                     return result;
                 }
                 else
@@ -149,10 +137,7 @@ namespace Client.API.HttpClients
                 _logger.LogError(ex, "An error occurred while fetching orders.");
                 throw;
             }
-
-
         }
-        
         public async Task<object> OrderConfirm(string id)
         {
             try
@@ -161,7 +146,6 @@ namespace Client.API.HttpClients
 
                 if (response.IsSuccessStatusCode)
                 {
-                    //it returns empty result
                     return new { isConfirm = true};
                 }
                 else
@@ -184,7 +168,6 @@ namespace Client.API.HttpClients
 
                 if (response.IsSuccessStatusCode)
                 {
-                    //it returns empty result
                     return new { isCancel = true };
                 }
                 else
@@ -208,7 +191,6 @@ namespace Client.API.HttpClients
 
                 if (response.IsSuccessStatusCode)
                 {
-                    //it returns empty result
                     return new { success = true };
                 }
                 else

@@ -53,7 +53,26 @@ namespace BusinessLogicLayer.Services
 
             return isDeleted;
         }
-        public async Task<bool> OrderChangeStatusAsync(Guid id, OrderStatus orderStatus)
+        public async Task<bool> OrderChangeStatusAsync(Guid id, OrderStatus orderStatus, bool sendToInventoryApprove = false)
+        {
+            bool isChanged = false;
+            if (sendToInventoryApprove && orderStatus == OrderStatus.Confirmed)
+            {
+                isChanged = await _ordersRepo.OrderChangeStatusAsync(id, OrderStatus.PendingApproval);
+
+                if(isChanged)
+                {
+                    await publishQueueForCheckProductStockUpdate(id);
+                    return true;
+                }
+                return false;
+                
+            }
+
+            isChanged = await _ordersRepo.OrderChangeStatusAsync(id, orderStatus);
+            return isChanged;
+        }
+        public async Task publishQueueForCheckProductStockUpdate(Guid id)
         {
             var order = await _ordersRepo.OrderGetByIdWithItemsAsync(id);
             if (order == null)
@@ -65,7 +84,7 @@ namespace BusinessLogicLayer.Services
                 Sku = oi.Sku,
                 quantity = oi.Quantity
             }).ToList();
-           
+
 
             string routingKey = "inventory.check.approve.retrieved";
             OrderToApprove ota = new OrderToApprove
@@ -77,19 +96,10 @@ namespace BusinessLogicLayer.Services
                     Quantity = p.quantity
                 }).ToList()
             };
-            //var message1 = new
-            //{
-            //    OrderId = order.OrderId,
-            //    Products = products,
-            //};
+
             var message = JsonConvert.SerializeObject(ota);
 
             _rabbitMQPublisher.Publish<OrderToApprove>(routingKey, ota);
-            return true;
-
-            //bool isChanged = await _ordersRepo.OrderChangeStatusAsync(id, orderStatus);
-
-            //return isChanged;
         }
         public async Task<OrderForResponseWithItems?> OrderGetByIdAsync(Guid id)
         {

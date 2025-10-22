@@ -8,6 +8,7 @@ using DataAccessLayer.Data;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Order.API.OperationFilters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,7 @@ builder.Services.AddControllers(options =>
 
 //add inner url
 string orderscLIENTServiceUrl = Environment.GetEnvironmentVariable("ORDER_CLIENT_MICROSERVICE_BASE_URL") ?? "http://localhost:5002";
-
+string[] strings = orderscLIENTServiceUrl.Split(",").ToArray();
 
 await builder.Services.AddDataAccessLayer(builder.Configuration);
 builder.Services.AddBusinessLogicLayer(builder.Configuration);
@@ -45,7 +46,7 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder.AllowAnyOrigin()
-            .WithOrigins("http://localhost:5002", orderscLIENTServiceUrl)
+            .WithOrigins(strings)//"http://localhost:5002", orderscLIENTServiceUrl)
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials();
@@ -87,26 +88,3 @@ app.MapHealthChecks("/health");
 
 app.Run();
 
-public class AddCorrelationIdHeader : IOperationFilter
-{
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
-    {
-        operation.Parameters.Add(new OpenApiParameter
-        {
-            Name = "x-correlation-id",
-            In = ParameterLocation.Header,
-            Required = false,
-            Description = "Correlation ID for tracking requests",
-            Schema = new OpenApiSchema { Type = "string" }
-        });
-
-        operation.Parameters.Add(new OpenApiParameter
-        {
-            Name = "traceparent",
-            In = ParameterLocation.Header,
-            Required = false,
-            Description = "Traceparent for distributed tracing",
-            Schema = new OpenApiSchema { Type = "string" }
-        });
-    }
-}

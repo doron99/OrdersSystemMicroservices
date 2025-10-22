@@ -27,27 +27,33 @@
             .build();
 
         //handle incoming messages
-        connection.on("ReceiveOrderStatusUpdate", (orderId, status) => {
+        connection.on("ReceiveOrderStatusUpdate", (orderId, status, hubMsg) => {
             console.log(`Order ${orderId} status updated to: ${status}`);
             switch (status) {
                 case 0:
-                    toastr.warning(`Order ${orderId} status has been back to draft`, 'SignalR notify');
+                    if (hubMsg)
+                        toastr.warning(`${hubMsg}`, 'SignalR notify');
+                    else
+                        toastr.warning(`Order ${orderId} status has been back to draft`, 'SignalR notify');
                     break;
                 case 1:
-                    toastr.success(`Order ${orderId} status has been confirmed`, 'SignalR notify');
+                    if (hubMsg)
+                        toastr.success(`${hubMsg}`, 'SignalR notify');
+                    else
+                        toastr.success(`Order ${orderId} status has been confirmed`, 'SignalR notify');
                     break;
                 case 2:
-                    toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
+                    if (hubMsg)
+                        toastr.error(`${hubMsg}`, 'SignalR notify');
+                    else
+                        toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
                     break;
                 case 3:
-                    toastr.info(`Order ${orderId} status has been waiting`, 'SignalR notify');
+                    if (hubMsg) toastr.info(`${hubMsg}`, 'SignalR notify');
                     break;
                 default:
                 // Code to be executed if no case matches
             }
-
-
-            
             getOrders();
         });
         connection.on("ReceiveOrderConfirmed", (orderId, status) => {
@@ -172,6 +178,7 @@
             })
             .then(data => {
                 console.log('Order status:', data);
+                getOrders();
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);

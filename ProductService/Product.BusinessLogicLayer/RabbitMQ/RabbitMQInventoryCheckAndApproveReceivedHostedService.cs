@@ -65,15 +65,12 @@ namespace BusinessLogicLayer.RabbitMQ
                               routingKey: routingKey);
 
             EventingBasicConsumer consumer = new EventingBasicConsumer(_channel);
-
+            
             consumer.Received += async (model, ea) =>
             {
                 byte[] body = ea.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
-                if (message.StartsWith("\"") && message.EndsWith("\""))
-                {
-                    message = message.Trim('"'); // Remove the outer quotes
-                }
+                
                 if (!string.IsNullOrEmpty(message))
                 {
                     OrderToApprove orderToApprove = JsonConvert.DeserializeObject<OrderToApprove>(message);
@@ -94,18 +91,33 @@ namespace BusinessLogicLayer.RabbitMQ
                         List<Product> products = await productsRepo.GetProductsByListOfSkus(Skus);
 
                         string res = ValidateAndSubtractQuantities(products, orderToApprove.Products);
+                        OrderToApproveMessageResponse otam = new OrderToApproveMessageResponse();
+                        otam.OrderId = orderToApprove.OrderId;
+                        otam.ErrorMessage = res;
                         if (res == "") //success
                         {
+                            foreach (var prod in orderToApprove.Products)
+                            {
+                                var existingProduct = products.FirstOrDefault(p => p.Sku == prod.Sku);
+                                await productsRepo.WithdrawStockAsync(
+                                        prod.Sku,
+                                        existingProduct.Stock,
+                                        prod.Quantity,
+                                        "Withdraw",
+                                        orderToApprove.OrderId);
+                            }
+                                
+                            otam.Success = true;
                             Console.WriteLine("Inventory check passed and quantities subtracted successfully.");
                         }
                         else
                         {
-
+                            otam.Success = false;
                             Console.WriteLine("Inventory check failed: " + res);
                         }
                         //sleep for 5 seconds to simulate processing time
                         await Task.Delay(5000);
-                        _ = SendDataToHttpMicroserviceAsync(new { res = res,orderId = orderToApprove.OrderId });// Use `_ =` to ignore the task and avoid waiting
+                        _ = SendDataToHttpMicroserviceAsync(otam);// Use `_ =` to ignore the task and avoid waiting
 
                     }
                     var x = 1;
@@ -118,10 +130,9 @@ namespace BusinessLogicLayer.RabbitMQ
                                  consumer: consumer);
             return Task.CompletedTask;
         }
-        public async Task SendDataToHttpMicroserviceAsync(object data)
+        public async Task SendDataToHttpMicroserviceAsync(OrderToApproveMessageResponse data)
         {
             using var client = new HttpClient();
-            //client.BaseAddress = new Uri("https://your-microservice-url/api/endpoint"); // Adjust the URL
             client.BaseAddress = new Uri(_config["ORDER_API_MICROSERVICE_BASE_URL"]+"/api/orders/testOnly"); // Adjust the URL
 
             // Serialize your data to JSON

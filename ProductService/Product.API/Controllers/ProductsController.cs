@@ -22,6 +22,12 @@ namespace Product.API.Controllers
             var products = await _productService.GetAll();
             return Ok(products);
         }
+        [HttpGet("GetStockTrackingList")]
+        public async Task<IActionResult> GetStockTrackingList()
+        {
+            var products = await _productService.GetStockTrackingList();
+            return Ok(products);
+        }
 
 
     }

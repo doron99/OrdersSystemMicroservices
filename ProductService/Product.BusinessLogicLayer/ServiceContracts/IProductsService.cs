@@ -7,5 +7,6 @@ namespace BusinessLogicLayer.ServiceContracts
     {
         Task<List<DataAccessLayer.Entities.Product?>> GetAll();
         Task<List<Product>> GetProductsByListOfSkus(List<string> skus);
+        Task<List<StockTracking?>> GetStockTrackingList();
     }
 }

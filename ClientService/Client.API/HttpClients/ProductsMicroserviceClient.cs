@@ -39,7 +39,33 @@ namespace Client.API.HttpClients
             }
        
         }
-      
-       
+        public async Task<List<object?>> GetStockTrackingList()
+        {
+            List<object?> stockTrackingList = null;
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync($"/api/products/GetStockTrackingList");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<List<object?>>();
+                    stockTrackingList = result ?? new List<object?>();
+
+                    return stockTrackingList;
+                }
+                else
+                {
+                    throw new HttpRequestException("Http response status occour:" + response.StatusCode.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching orders.");
+                throw;
+            }
+
+        }
+
+
     }
 }

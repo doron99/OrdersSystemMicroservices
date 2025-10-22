@@ -14,7 +14,7 @@ namespace BusinessLogicLayer.ServiceContracts
         Task<OrderItemReponse?> OrderAddItemAsync(Guid orderId, OrderItemAddRequest orderItemRequest);
         Task<bool> OrderDeleteItemAsync(Guid orderId, Guid itemId);
 
-        Task<bool> OrderChangeStatusAsync(Guid id, OrderStatus orderStatus);
+        Task<bool> OrderChangeStatusAsync(Guid id, OrderStatus orderStatus, bool sendToInventoryApprove = false);
         Task<OrderForResponseWithItems?> OrderGetByIdAsync(Guid id);
         Task<List<OrderForResponseWithItems?>> OrderGetByParamsAsync(OrderStatus? status, Guid? customerId, int page, int pageSize);
     }

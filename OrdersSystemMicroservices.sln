@@ -9,19 +9,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderService", "OrderServic
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClientService", "ClientService", "{030FC8E9-6CB4-4814-A333-3E136A8868AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.API", "ClientService\Client.API\Client.API.csproj", "{08A5F2F0-A72C-4B10-A9A8-AEAA9AD5E5A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client.API", "ClientService\Client.API\Client.API.csproj", "{08A5F2F0-A72C-4B10-A9A8-AEAA9AD5E5A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Product.API", "ProductService\Product.API\Product.API.csproj", "{B14E56F0-4000-4EB5-B7A7-981F376A1959}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Product.API", "ProductService\Product.API\Product.API.csproj", "{B14E56F0-4000-4EB5-B7A7-981F376A1959}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Product.BusinessLogicLayer", "ProductService\Product.BusinessLogicLayer\Product.BusinessLogicLayer.csproj", "{6A15F9D1-9863-429E-9443-F1F6DAD88695}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Product.BusinessLogicLayer", "ProductService\Product.BusinessLogicLayer\Product.BusinessLogicLayer.csproj", "{6A15F9D1-9863-429E-9443-F1F6DAD88695}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Product.DataAccessLayer", "ProductService\Product.DataAccessLayer\Product.DataAccessLayer.csproj", "{2AD72240-6767-445F-A1C8-6AAF72A1879E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Product.DataAccessLayer", "ProductService\Product.DataAccessLayer\Product.DataAccessLayer.csproj", "{2AD72240-6767-445F-A1C8-6AAF72A1879E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Order.API", "OrderService\Order.API\Order.API.csproj", "{F728DB74-5105-4A1B-B507-F64A7F508E7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Order.API", "OrderService\Order.API\Order.API.csproj", "{F728DB74-5105-4A1B-B507-F64A7F508E7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Order.DataAccessLayer", "OrderService\Order.DataAccessLayer\Order.DataAccessLayer.csproj", "{3FD699A2-8EE4-483F-AE63-04F3149AF77E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Order.DataAccessLayer", "OrderService\Order.DataAccessLayer\Order.DataAccessLayer.csproj", "{3FD699A2-8EE4-483F-AE63-04F3149AF77E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Order.BusinessLogicLayer", "OrderService\Order.BusinessLogicLayer\Order.BusinessLogicLayer.csproj", "{C4321185-18EE-46CA-B452-B5C5D5654AB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Order.BusinessLogicLayer", "OrderService\Order.BusinessLogicLayer\Order.BusinessLogicLayer.csproj", "{C4321185-18EE-46CA-B452-B5C5D5654AB0}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject

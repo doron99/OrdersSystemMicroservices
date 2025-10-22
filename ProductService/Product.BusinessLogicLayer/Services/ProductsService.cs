@@ -20,14 +20,6 @@ namespace BusinessLogicLayer.Services
         {
             var products = await _productsRepo.GetAllAsync();
       
-            //string routingKey = "product.all.retrieved";
-            //var message1 = new
-            //{
-            //    products = products,
-            //};
-            //var message = JsonConvert.SerializeObject(message1);
-
-            //_rabbitMQPublisher.Publish<object>(routingKey, message);
             return products;
 
         }
@@ -37,6 +29,11 @@ namespace BusinessLogicLayer.Services
       
             return products;
 
+        }
+
+        public async Task<List<StockTracking?>> GetStockTrackingList()
+        {
+            return await _productsRepo.GetStockTrackingListAsync();
         }
     }
 }

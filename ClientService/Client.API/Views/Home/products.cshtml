@@ -1,0 +1,166 @@
+﻿@{
+    var stockTrackingList = ViewData["StockTrackingList"] as List<object>; // Adjust the type as necessary
+    var jsonStockTrackingList = Json.Serialize(stockTrackingList); // Serialize customers into JSON
+    var products = ViewData["Products"] as List<Client.API.Dtos.ProductDto>; // Adjust the type as necessary
+    var jsonProducts = Json.Serialize(products); // Serialize customers into JSON
+    @using Microsoft.Extensions.Configuration
+    @inject IConfiguration Configuration
+}
+
+<div id="productsContainer" class="grid-container">
+    <div style=""><h4>Product list</h4></div>
+    <div style=""><h4>Stock tracking list</h4></div>
+</div>
+
+
+<script>
+    var products = @Html.Raw(jsonProducts);
+    var stockTrackingList = @Html.Raw(jsonStockTrackingList);
+    console.log('products', products);
+    console.log('stockTrackingList', stockTrackingList);
+
+    $(document).ready(function () {
+
+        renderProducts();
+        renderStockTrackingList();
+    });
+    function renderProducts() {
+
+        const productItems = `
+<table style="border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>productDesc</th>
+            <th>sku</th>
+            <th>stock</th>
+            <th>unitPrice</th>
+        </tr>
+    </thead>
+    <tbody>
+        ${products.map((oi,idx)=> {
+            return `
+            <tr>
+                <td>${idx+1}</td>
+                <td>${oi.productDesc}</td>
+                <td>${oi.sku}</td>
+                <td>${oi.stock}</td>
+                <td>${oi.unitPrice}$</td>
+            </tr>`;
+        }).join('')}
+            
+    </tbody>
+</table>
+`;
+        const productsContainer = document.getElementById('productsContainer');
+
+        productsContainer.innerHTML += productItems;
+    }
+    function renderStockTrackingList1() {
+
+        const productItems = `
+<table style="border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>sku</th>
+            <th>stockBeforeAction</th>
+            <th>withdrawalQuantity</th>
+            <th>restockQuantity</th>
+            <th>createDate</th>
+            <th>remarks</th>
+            <th>type</th>
+            <th>orderId</th>
+        </tr>
+    </thead>
+    <tbody>
+        ${stockTrackingList.map((oi, idx) => {
+            return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${oi.sku}</td>
+                <td>${oi.stockBeforeAction}</td>
+                <td>${oi.withdrawalQuantity}</td>
+                <td>${oi.restockQuantity}</td>
+                <td>${oi.createDate}</td>
+                <td>${oi.remarks}</td>
+                <td>${oi.type}</td>
+                <td>${oi.orderId}</td>
+
+            </tr>`;
+        }).join('')}
+            
+    </tbody>
+</table>
+`;
+        const productsContainer = document.getElementById('productsContainer');
+
+        productsContainer.innerHTML += productItems;
+    }
+    function renderStockTrackingList() {
+
+        const productItems = `
+<table style="border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        ${stockTrackingList.map((oi, idx) => {
+            return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>sku: </strong>${oi.sku}<br/>
+                    <strong>stockBeforeAction: </strong>${oi.stockBeforeAction}<br/>
+                    <strong>withdrawalQuantity: </strong>${oi.withdrawalQuantity}<br/>
+                    <strong>restockQuantity: </strong>${oi.restockQuantity}<br/>
+                    <strong>createDate: </strong>${oi.createDate}<br/>
+                    <strong>remarks: </strong>${oi.remarks}<br/>
+                    <strong>type: </strong>${oi.type}<br/>
+                    <strong>orderId: </strong>${oi.orderId}
+                </td>
+            </tr>`;
+        }).join('')}
+            
+    </tbody>
+</table>
+`;
+        const productsContainer = document.getElementById('productsContainer');
+
+        productsContainer.innerHTML += productItems;
+    }
+</script>
+<style>
+    
+
+ 
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Two equal columns */
+        gap: 15px; /* Gap between the columns */
+        align-items: baseline;
+    }
+
+    .item {
+        padding: 20px; /* Add some padding */
+    }
+
+</style>

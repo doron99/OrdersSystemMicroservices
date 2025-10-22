@@ -15,5 +15,14 @@ namespace DataAccessLayer.RepositoriesContracts
         Task<Product?> UpdateAsync(Product product);
         Task<bool> DeleteAsync(Guid id);
         Task<List<Product?>> GetProductsByListOfSkus(List<string> skus);
+        Task<List<StockTracking?>> GetStockTrackingListAsync();
+
+        Task WithdrawStockAsync(
+             string sku,
+             int stockBeforeAction,
+             int quantity,
+             string remarks,
+             Guid? orderId); 
+      
     }
 }

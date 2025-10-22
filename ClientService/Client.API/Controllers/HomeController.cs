@@ -51,7 +51,15 @@ namespace Client.API.Controllers
 
             return View();
         }
+        [HttpGet("products")]
+        public async Task<IActionResult> Products()
+        {
+            
+            ViewData["Products"] = await _productsMicroserviceClient.GetProducts();
+            ViewData["StockTrackingList"] = await _productsMicroserviceClient.GetStockTrackingList();
 
+            return View();
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

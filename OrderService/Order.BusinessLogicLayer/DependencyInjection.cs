@@ -23,7 +23,7 @@ namespace BusinessLogicLayer
             services.AddScoped<IOrdersService, OrdersService>();
             services.AddTransient<IRabbitMQPublisher, RabbitMQPublisher>();
             //services.AddTransient<IRabbitMQProductGetAllReceivedCunsumer, RabbitMQProductGetAllReceivedCunsumer>();
-            services.AddHostedService<RabbitMQProductGetAllReceivedHostedService>();
+            //services.AddHostedService<RabbitMQProductGetAllReceivedHostedServiceExampleOnly>();
             return services;
         }
     }

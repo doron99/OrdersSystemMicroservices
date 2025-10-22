@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 namespace BusinessLogicLayer.RabbitMQ
 {
     
-    public class RabbitMQProductGetAllReceivedHostedService : IHostedService, IDisposable
+    public class RabbitMQProductGetAllReceivedHostedServiceExampleOnly : IHostedService, IDisposable
     {
         private readonly ILogger<IHostedService> _logger;
         private readonly IConfiguration _config;
         private readonly IModel _channel;
         private readonly IConnection _connection;
-        public RabbitMQProductGetAllReceivedHostedService(ILogger<IHostedService> logger,IConfiguration config)
+        public RabbitMQProductGetAllReceivedHostedServiceExampleOnly(ILogger<IHostedService> logger,IConfiguration config)
         {
             _logger = logger;
             _config = config;

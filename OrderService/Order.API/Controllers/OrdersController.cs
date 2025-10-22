@@ -3,6 +3,7 @@ using BusinessLogicLayer.ServiceContracts;
 using DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Order.API.DTOs;
 using Order.API.Hubs;
 
 namespace Order.API.Controllers
@@ -35,20 +36,32 @@ namespace Order.API.Controllers
             return Ok(orderCreated);
             //return CreatedAtAction(nameof(GetOrderById), new { id = orderCreated.Id }, orderCreated);
         }
+
         [HttpPost("testOnly")]
-        public async Task<IActionResult> testOnly([FromBody] dynamic obj)
+        public async Task<IActionResult> testOnly([FromBody] OrderToApproveMessageResponse otam)
         {
-            string d = obj["res"];
+            //string d = obj["res"];
+            //string d1 = obj["orderId"];
+
             //todo: fix here
-            Guid orderId = Guid.Parse(obj["orderId"]);
-            if (d == "") {
-                var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(orderId,
+            //Guid orderId = Guid.NewGuid();
+            if (otam.Success) {
+                var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(otam.OrderId,
                 orderStatus: DataAccessLayer.Entities.OrderStatus.Confirmed);
-                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, "Stock is ok", OrderStatus.Confirmed);
+                await _hubContext.Clients.All.SendAsync(
+                    OrdersHubMethods.ReceiveOrderStatusUpdate,
+                    otam.OrderId.ToString(),
+                    OrderStatus.Confirmed,
+                    "success"
+                    );
             } else {
-                var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(orderId,
+                var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(otam.OrderId,
                 orderStatus: DataAccessLayer.Entities.OrderStatus.Draft);
-                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, "Stock is not ok", OrderStatus.Draft);
+                await _hubContext.Clients.All.SendAsync(
+                    OrdersHubMethods.ReceiveOrderStatusUpdate,
+                    otam.OrderId.ToString(), 
+                    OrderStatus.Draft,
+                    otam.ErrorMessage);
             }
 
 
@@ -64,7 +77,6 @@ namespace Order.API.Controllers
             {
                 return BadRequest("Order could not add an item.");
             }
-            await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderItemCreate, orderItemCreated);
 
             return Ok(orderItemCreated);
         }
@@ -77,32 +89,39 @@ namespace Order.API.Controllers
             {
                 return BadRequest("Order could not delete current item.");
             }
-            await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderItemDeleted, new { deletedItemId = itemId });
             return Ok("Item deleted Successfully");
         }
-        [HttpPost("{id}/backToDraft")]
-        public async Task<IActionResult> backToDraft(Guid id)
-        {
-            var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(id,
-                orderStatus: DataAccessLayer.Entities.OrderStatus.Draft);
-            if (!isOrderStatusChanged)
-            {
-                return BadRequest("Order status could not be changed");
-            }
+        //[HttpPost("{id}/backToDraft")]
+        //public async Task<IActionResult> backToDraft(Guid id)
+        //{
+        //    var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(id,
+        //        orderStatus: DataAccessLayer.Entities.OrderStatus.Draft);
+        //    if (!isOrderStatusChanged)
+        //    {
+        //        return BadRequest("Order status could not be changed");
+        //    }
 
-            await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, id, OrderStatus.Draft);
-            return Ok();
-        }
+        //    await _hubContext.Clients.All.SendAsync(
+        //        OrdersHubMethods.ReceiveOrderStatusUpdate, 
+        //        id, 
+        //        OrderStatus.Draft);
+        //    return Ok();
+        //}
+        
         [HttpPost("{id}/confirm")]
         public async Task<IActionResult> OrderConfirm(Guid id)
         {
             var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(id, 
-                orderStatus: DataAccessLayer.Entities.OrderStatus.PendingApproval);
+                orderStatus: DataAccessLayer.Entities.OrderStatus.Confirmed,true);
             if (!isOrderStatusChanged)
             {
                 return BadRequest("Order status could not be changed");
             }
-            await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, id, OrderStatus.Confirmed);
+            await _hubContext.Clients.All.SendAsync(
+                OrdersHubMethods.ReceiveOrderStatusUpdate, 
+                id, 
+                OrderStatus.PendingApproval, 
+                OrdersHubMethods.MsgConfirmAndWaitingApproval);
 
             return Ok();
         }
@@ -116,7 +135,11 @@ namespace Order.API.Controllers
                 return BadRequest("Order status could not be changed");
             }
 
-            await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, id, OrderStatus.Cancelled);
+            await _hubContext.Clients.All.SendAsync(
+                OrdersHubMethods.ReceiveOrderStatusUpdate, 
+                id, 
+                OrderStatus.Cancelled,
+                OrdersHubMethods.MsgCanceled);
             return Ok();
         }
         [HttpGet("{id}")]

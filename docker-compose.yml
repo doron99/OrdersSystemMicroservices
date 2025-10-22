@@ -5,12 +5,13 @@ services:
       context: .
       dockerfile: OrderService/Order.API/Dockerfile
     environment:
+     - ASPNETCORE_ENVIRONMENT=Development
      - MSSQL_DATABASE=OrdersDB
      - MSSQL_HOST=sqlserver
      - MSSQL_PORT=1433
      - MSSQL_USER=sa
      - MSSQL_PASSWORD=Password!
-     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://client.api:8081
+     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://client.api:8081,http://localhost:5002
      - RabbitMQ_HostName=rabbitmq
      - RabbitMQ_UserName=user
      - RabbitMQ_Password=password
@@ -34,7 +35,7 @@ services:
     networks:
       - orders_network
 
-  order.client:
+  client.api:
     image: clientapi
     build:
         context: .
@@ -42,14 +43,17 @@ services:
     ports:
      - "5002:8081"
     environment:
-     - ORDER_API_MICROSERVICE_BASE_URL=http://localhost:5001
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ORDER_API_MICROSERVICE_BASE_URL=http://order.api:8080
      - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://localhost:5002
      - ORDER_API_MICROSERVICE_HTTP_CLIENT_BASE_URL=http://order.api:8080
+     - PRODUCT_API_MICROSERVICE_HTTP_CLIENT_BASE_URL=http://client.api:8083
      - ASPNETCORE_URLS=http://+:8081
      - RabbitMQ_HostName=rabbitmq
      - RabbitMQ_UserName=user
      - RabbitMQ_Password=password
      - RabbitMQ_Port=5672
+     - RabbitMQ_Products_Exchange=product.exchange
     networks:
      - orders_network 
     depends_on:
@@ -66,5 +70,30 @@ services:
     networks:
       - orders_network
 
+  product.api:
+    image: productapi
+    build:
+      context: .
+      dockerfile: ProductService/Product.API/Dockerfile
+    environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - MSSQL_DATABASE=ProductsDB
+     - MSSQL_HOST=sqlserver
+     - MSSQL_PORT=1433
+     - MSSQL_USER=sa
+     - MSSQL_PASSWORD=Password!
+     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://client.api:8081
+     - ORDER_API_MICROSERVICE_BASE_URL=http://order.api:8080
+     - RabbitMQ_HostName=rabbitmq
+     - RabbitMQ_UserName=user
+     - RabbitMQ_Password=password
+     - RabbitMQ_Port=5672
+     - RabbitMQ_Products_Exchange=product.exchange
+    ports:
+     - "5003:8083"
+    depends_on:
+     - sqlserver
+    networks:
+      - orders_network
 networks:
   orders_network:  # Define the custom network

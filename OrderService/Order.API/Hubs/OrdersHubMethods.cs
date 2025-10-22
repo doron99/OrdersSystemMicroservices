@@ -8,5 +8,11 @@
         public const string ReceiveOrderItemCreate = "ReceiveOrderItemCreate";
         public const string ReceiveOrderConfirmed = "ReceiveOrderConfirmed";
 
+        //messages
+        public const string MsgConfirmAndWaitingApproval = "The request has been confirmed and is awaiting approval";
+        public const string MsgCanceled = "The order has been canceled";
+
+
+
     }
 }
