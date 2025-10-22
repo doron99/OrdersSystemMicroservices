@@ -12,7 +12,9 @@ namespace DataAccessLayer.Entities
     {
         Draft = 0,
         Confirmed = 1,
-        Cancelled = 2
+        Cancelled = 2,
+        PendingApproval = 3,
+        Rejected = 4
     }
     public class Order
     {

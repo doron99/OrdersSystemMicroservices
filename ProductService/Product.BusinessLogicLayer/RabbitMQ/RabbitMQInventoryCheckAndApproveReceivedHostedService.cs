@@ -103,7 +103,9 @@ namespace BusinessLogicLayer.RabbitMQ
 
                             Console.WriteLine("Inventory check failed: " + res);
                         }
-                        _ = SendDataToHttpMicroserviceAsync(new { res = res });// Use `_ =` to ignore the task and avoid waiting
+                        //sleep for 5 seconds to simulate processing time
+                        await Task.Delay(5000);
+                        _ = SendDataToHttpMicroserviceAsync(new { res = res,orderId = orderToApprove.OrderId });// Use `_ =` to ignore the task and avoid waiting
 
                     }
                     var x = 1;

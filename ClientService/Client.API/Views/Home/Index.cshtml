@@ -29,13 +29,25 @@
         //handle incoming messages
         connection.on("ReceiveOrderStatusUpdate", (orderId, status) => {
             console.log(`Order ${orderId} status updated to: ${status}`);
-            if (status == 1) {
-                //confirm
-                toastr.success(`Order ${orderId} status has been confirmed`, 'SignalR notify');
-            } else {
-                //cancelled
-                toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
+            switch (status) {
+                case 0:
+                    toastr.warning(`Order ${orderId} status has been back to draft`, 'SignalR notify');
+                    break;
+                case 1:
+                    toastr.success(`Order ${orderId} status has been confirmed`, 'SignalR notify');
+                    break;
+                case 2:
+                    toastr.error(`Order ${orderId} status has been canceled`, 'SignalR notify');
+                    break;
+                case 3:
+                    toastr.info(`Order ${orderId} status has been waiting`, 'SignalR notify');
+                    break;
+                default:
+                // Code to be executed if no case matches
             }
+
+
+            
             getOrders();
         });
         connection.on("ReceiveOrderConfirmed", (orderId, status) => {
@@ -68,7 +80,6 @@
             })
             .then(data => {
                 console.log('Orders:', data);
-                //document.getElementById('ordersContainer').textContent = JSON.stringify(data, null, 2); OrderConfirm
                 renderHtmlTable(data);
 
 
@@ -111,10 +122,24 @@
                 </tbody>
             </table>
             `;
-            const orderStatusBadge = order.status == 0
-                ? '<span class="badge alert-primary">Waiting</span>'
-                : order.status == 1 ? '<span class="badge alert-success">Confirmed</span>'
-                    : '<span class="badge alert-danger">canceled</span>'
+            let orderStatusBadge = 0;
+            switch (order.status) {
+                case 0:
+                    orderStatusBadge = '<span class="badge alert-primary">Draft</span>'
+                    break;
+                case 1:
+                    orderStatusBadge = '<span class="badge alert-success">Confirmed</span>'
+                    break;
+                case 2:
+                    orderStatusBadge = '<span class="badge alert-danger">canceled</span>'
+                    break;
+                case 3:
+                    orderStatusBadge = '<span class="badge alert-warning">pending approval</span>'
+                    break;
+                default:
+                // Code to be executed if no case matches
+            }
+           
 
             // Prepare the HTML for each order
             html += `<div class="order item">

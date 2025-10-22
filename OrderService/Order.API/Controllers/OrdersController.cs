@@ -39,10 +39,16 @@ namespace Order.API.Controllers
         public async Task<IActionResult> testOnly([FromBody] dynamic obj)
         {
             string d = obj["res"];
+            //todo: fix here
+            Guid orderId = Guid.Parse(obj["orderId"]);
             if (d == "") {
-                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderConfirmed, "Stock is ok", OrderStatus.Confirmed);
+                var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(orderId,
+                orderStatus: DataAccessLayer.Entities.OrderStatus.Confirmed);
+                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, "Stock is ok", OrderStatus.Confirmed);
             } else {
-                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderConfirmed, "Stock is not ok", OrderStatus.Confirmed);
+                var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(orderId,
+                orderStatus: DataAccessLayer.Entities.OrderStatus.Draft);
+                await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, "Stock is not ok", OrderStatus.Draft);
             }
 
 
@@ -74,12 +80,24 @@ namespace Order.API.Controllers
             await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderItemDeleted, new { deletedItemId = itemId });
             return Ok("Item deleted Successfully");
         }
+        [HttpPost("{id}/backToDraft")]
+        public async Task<IActionResult> backToDraft(Guid id)
+        {
+            var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(id,
+                orderStatus: DataAccessLayer.Entities.OrderStatus.Draft);
+            if (!isOrderStatusChanged)
+            {
+                return BadRequest("Order status could not be changed");
+            }
 
+            await _hubContext.Clients.All.SendAsync(OrdersHubMethods.ReceiveOrderStatusUpdate, id, OrderStatus.Draft);
+            return Ok();
+        }
         [HttpPost("{id}/confirm")]
         public async Task<IActionResult> OrderConfirm(Guid id)
         {
             var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(id, 
-                orderStatus: DataAccessLayer.Entities.OrderStatus.Confirmed);
+                orderStatus: DataAccessLayer.Entities.OrderStatus.PendingApproval);
             if (!isOrderStatusChanged)
             {
                 return BadRequest("Order status could not be changed");
