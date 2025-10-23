@@ -7,19 +7,19 @@ builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
 builder.Services.AddHttpClient<OrdersMicroserviceClient>(client =>
 {
-    string ordersServiceUrl = Environment.GetEnvironmentVariable("ORDER_API_MICROSERVICE_HTTP_CLIENT_BASE_URL") ?? "http://localhost:5001";
+    //string ordersServiceUrl = Environment.GetEnvironmentVariable("ORDER_API_MICROSERVICE_HTTP_CLIENT_BASE_URL");
 
-    client.BaseAddress = new Uri(ordersServiceUrl);// $"http://localhost:5001");
+    //client.BaseAddress = new Uri(ordersServiceUrl);// $"http://localhost:5001");
 
-    // client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
+    client.BaseAddress = new Uri($"http://{builder.Configuration["OrdersMicroserviceName"]}:{builder.Configuration["OrdersMicroservicePort"]}");
 });
 builder.Services.AddHttpClient<ProductsMicroserviceClient>(client =>
 {
-    string ordersServiceUrl = Environment.GetEnvironmentVariable("PRODUCT_API_MICROSERVICE_HTTP_CLIENT_BASE_URL") ?? "http://localhost:5003";
+    //string ordersServiceUrl = Environment.GetEnvironmentVariable("PRODUCT_API_MICROSERVICE_HTTP_CLIENT_BASE_URL");
 
-    client.BaseAddress = new Uri(ordersServiceUrl);// $"http://localhost:5001");
+    //client.BaseAddress = new Uri(ordersServiceUrl);// $"http://localhost:5001");
 
-    // client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
+    client.BaseAddress = new Uri($"http://{builder.Configuration["ProductsMicroserviceName"]}:{builder.Configuration["ProductsMicroservicePort"]}");
 });
 var app = builder.Build();
 

@@ -40,11 +40,7 @@ namespace Order.API.Controllers
         [HttpPost("testOnly")]
         public async Task<IActionResult> testOnly([FromBody] OrderToApproveMessageResponse otam)
         {
-            //string d = obj["res"];
-            //string d1 = obj["orderId"];
 
-            //todo: fix here
-            //Guid orderId = Guid.NewGuid();
             if (otam.Success) {
                 var isOrderStatusChanged = await _ordersService.OrderChangeStatusAsync(otam.OrderId,
                 orderStatus: DataAccessLayer.Entities.OrderStatus.Confirmed);

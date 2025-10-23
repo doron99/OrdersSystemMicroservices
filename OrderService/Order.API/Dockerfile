@@ -28,9 +28,5 @@ RUN dotnet publish "./Order.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV MSSQL_DATABASE=OrdersDB
-ENV MSSQL_HOST=sqlserver
-ENV MSSQL_PORT=1433
-ENV MSSQL_USER=sa
-ENV MSSQL_PASSWORD=Password!
+
 ENTRYPOINT ["dotnet", "Order.API.dll"]

@@ -19,11 +19,16 @@
 
 
 <script>
+    console.log('OrdersMicroserviceBaseUrl', "@ViewData["OrdersMicroserviceBaseUrl"]");
+    console.log('ExternalOrdersMicroserviceBaseUrl', "@ViewData["ExternalOrdersMicroserviceBaseUrl"]");
+
+    const ordersMicroserviceBaseUrl = "@ViewData["OrdersMicroserviceBaseUrl"]";
+    const externalOrdersMicroserviceBaseUrl = "@ViewData["ExternalOrdersMicroserviceBaseUrl"]";
 
     $(document).ready(function () {
         // Create a connection to the hub
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("@Configuration["ORDER_API_MICROSERVICE_BASE_URL"]" +"/orderHub")
+            .withUrl(externalOrdersMicroserviceBaseUrl +"/orderHub")
             .build();
 
         //handle incoming messages
@@ -76,8 +81,8 @@
         getOrders();
     });
     function getOrders() {
-        console.log('url', "@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]" + '/api/orders?page=1&pageSize=100')
-        fetch("@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]" + '/api/orders?page=1&pageSize=100')
+        console.log('url','api/orders?page=1&pageSize=100')
+        fetch('api/orders?page=1&pageSize=100')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.statusText);
@@ -145,7 +150,7 @@
                 default:
                 // Code to be executed if no case matches
             }
-           
+
 
             // Prepare the HTML for each order
             html += `<div class="order item">
@@ -169,7 +174,7 @@
         ordersContainer.innerHTML = html;
     }
     function OrderChangeStatus(id,action) {
-        fetch(`http://localhost:5002/api/orders/Order${action}/` +id)
+        fetch(`api/orders/Order${action}/` +id)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.statusText);

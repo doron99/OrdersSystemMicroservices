@@ -1,3 +1,5 @@
+version: '3.7'  # Specify the version of the Compose file
+
 services:
   order.api:
     image: orderapi
@@ -5,59 +7,64 @@ services:
       context: .
       dockerfile: OrderService/Order.API/Dockerfile
     environment:
-     - ASPNETCORE_ENVIRONMENT=Development
-     - MSSQL_DATABASE=OrdersDB
-     - MSSQL_HOST=sqlserver
-     - MSSQL_PORT=1433
-     - MSSQL_USER=sa
-     - MSSQL_PASSWORD=Password!
-     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://client.api:8081,http://localhost:5002
-     - RabbitMQ_HostName=rabbitmq
-     - RabbitMQ_UserName=user
-     - RabbitMQ_Password=password
-     - RabbitMQ_Port=5672
-     - RabbitMQ_Products_Exchange=product.exchange
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MSSQL_DATABASE=OrdersDB
+      - MSSQL_HOST=sqlserver
+      - MSSQL_PORT=1433
+      - MSSQL_USER=sa
+      - MSSQL_PASSWORD=Password!
+      - RabbitMQ_HostName=rabbitmq
+      - RabbitMQ_UserName=user
+      - RabbitMQ_Password=password
+      - RabbitMQ_Port=5672
+      - RabbitMQ_Products_Exchange=product.exchange
+      - ClientMicroserviceName=client.api
+      - ClientMicroservicePort=8081
+      - ClientMicroserviceExternalName=localhost
+      - ClientMicroserviceExternalPort=5002
     ports:
-     - "5001:8080"
+      - "5001:8080"  # This maps the external port 5001 to internal port 8080
     depends_on:
-     - sqlserver
+      - sqlserver
     networks:
       - orders_network
  
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-     - ACCEPT_EULA=Y
-     - SA_PASSWORD=Password!
-     - MSSQL_PID=Developer
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password!
+      - MSSQL_PID=Developer
     ports:
-     - "1433:1433"
+      - "1433:1433"
     networks:
       - orders_network
 
   client.api:
     image: clientapi
     build:
-        context: .
-        dockerfile: ClientService/Client.API/Dockerfile
-    ports:
-     - "5002:8081"
+      context: .
+      dockerfile: ClientService/Client.API/Dockerfile
     environment:
-     - ASPNETCORE_ENVIRONMENT=Development
-     - ORDER_API_MICROSERVICE_BASE_URL=http://order.api:8080
-     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://localhost:5002
-     - ORDER_API_MICROSERVICE_HTTP_CLIENT_BASE_URL=http://order.api:8080
-     - PRODUCT_API_MICROSERVICE_HTTP_CLIENT_BASE_URL=http://client.api:8083
-     - ASPNETCORE_URLS=http://+:8081
-     - RabbitMQ_HostName=rabbitmq
-     - RabbitMQ_UserName=user
-     - RabbitMQ_Password=password
-     - RabbitMQ_Port=5672
-     - RabbitMQ_Products_Exchange=product.exchange
-    networks:
-     - orders_network 
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8081
+      - RabbitMQ_HostName=rabbitmq
+      - RabbitMQ_UserName=user
+      - RabbitMQ_Password=password
+      - RabbitMQ_Port=5672
+      - RabbitMQ_Products_Exchange=product.exchange
+      - OrdersMicroserviceName=order.api
+      - OrdersMicroservicePort=8080
+      - ProductsMicroserviceName=product.api
+      - ProductsMicroservicePort=8083
+      - OrdersMicroserviceExternalName=localhost
+      - OrdersMicroserviceExternalPort=5001
+    ports:
+      - "5002:8081"  # Mapping external port 5002 to internal port 8081
     depends_on:
-     - order.api
+      - order.api
+    networks:
+      - orders_network 
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -76,24 +83,26 @@ services:
       context: .
       dockerfile: ProductService/Product.API/Dockerfile
     environment:
-     - ASPNETCORE_ENVIRONMENT=Development
-     - MSSQL_DATABASE=ProductsDB
-     - MSSQL_HOST=sqlserver
-     - MSSQL_PORT=1433
-     - MSSQL_USER=sa
-     - MSSQL_PASSWORD=Password!
-     - ORDER_CLIENT_MICROSERVICE_BASE_URL=http://client.api:8081
-     - ORDER_API_MICROSERVICE_BASE_URL=http://order.api:8080
-     - RabbitMQ_HostName=rabbitmq
-     - RabbitMQ_UserName=user
-     - RabbitMQ_Password=password
-     - RabbitMQ_Port=5672
-     - RabbitMQ_Products_Exchange=product.exchange
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8083
+      - MSSQL_DATABASE=ProductsDB
+      - MSSQL_HOST=sqlserver
+      - MSSQL_PORT=1433
+      - MSSQL_USER=sa
+      - MSSQL_PASSWORD=Password!
+      - RabbitMQ_HostName=rabbitmq
+      - RabbitMQ_UserName=user
+      - RabbitMQ_Password=password
+      - RabbitMQ_Port=5672
+      - RabbitMQ_Products_Exchange=product.exchange
+      - OrdersMicroserviceName=order.api
+      - OrdersMicroservicePort=8080
     ports:
-     - "5003:8083"
+      - "127.0.0.1:5003:8083"
     depends_on:
-     - sqlserver
+      - sqlserver
     networks:
       - orders_network
+
 networks:
   orders_network:  # Define the custom network

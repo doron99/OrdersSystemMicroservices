@@ -32,8 +32,10 @@ builder.Services.AddControllers(options =>
 }).AddNewtonsoftJson();
 
 //add inner url
-string orderscLIENTServiceUrl = Environment.GetEnvironmentVariable("ORDER_CLIENT_MICROSERVICE_BASE_URL") ?? "http://localhost:5002";
-string[] strings = orderscLIENTServiceUrl.Split(",").ToArray();
+
+string orderscLIENTServiceUrl = $"http://{builder.Configuration["ClientMicroserviceExternalName"]}:{builder.Configuration["ClientMicroserviceExternalPort"]}";
+//Environment.GetEnvironmentVariable("ORDER_CLIENT_MICROSERVICE_BASE_URL") ?? "http://localhost:5002";
+//string[] strings = orderscLIENTServiceUrl.Split(",").ToArray();
 
 await builder.Services.AddDataAccessLayer(builder.Configuration);
 builder.Services.AddBusinessLogicLayer(builder.Configuration);
@@ -46,7 +48,7 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder.AllowAnyOrigin()
-            .WithOrigins(strings)//"http://localhost:5002", orderscLIENTServiceUrl)
+            .WithOrigins(orderscLIENTServiceUrl)//"http://localhost:5002", orderscLIENTServiceUrl)
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials();

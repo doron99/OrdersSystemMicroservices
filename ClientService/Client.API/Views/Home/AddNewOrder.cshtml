@@ -44,7 +44,6 @@
 
 
 
-
     ///##-----create order---------------###############
     function createOrder() {
         const customerId = customerSelect.options[customerSelect.selectedIndex].value;
@@ -55,7 +54,7 @@
     }
 
     function addOrderApi(customerId, customerName) {
-        fetch("@Configuration["ORDER_CLIENT_MICROSERVICE_BASE_URL"]" +'/api/orders', {
+        fetch('/api/orders', {
             method: 'POST', // Specify POST method
             headers: {
                 'Content-Type': 'application/json' // Indicate that you're sending JSON data

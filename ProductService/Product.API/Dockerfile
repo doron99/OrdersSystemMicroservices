@@ -4,7 +4,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8080
+EXPOSE 8083
 
 
 # This stage is used to build the service project
@@ -28,9 +28,5 @@ RUN dotnet publish "./Product.API.csproj" -c $BUILD_CONFIGURATION -o /app/publis
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV MSSQL_DATABASE=ProductsDB
-ENV MSSQL_HOST=localhost
-ENV MSSQL_PORT=1433
-ENV MSSQL_USER=sa
-ENV MSSQL_PASSWORD=Password!
+
 ENTRYPOINT ["dotnet", "Product.API.dll"]

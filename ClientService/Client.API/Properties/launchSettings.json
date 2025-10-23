@@ -5,8 +5,10 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ORDER_API_MICROSERVICE_BASE_URL": "http://localhost:5001",
-        "ORDER_CLIENT_MICROSERVICE_BASE_URL": "http://localhost:5002"
+        "OrdersMicroserviceName": "localhost",
+        "OrdersMicroservicePort": "5001",
+        "ProductsMicroserviceName": "localhost",
+        "ProductsMicroservicePort": "5003"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5002"

@@ -1,6 +1,5 @@
 ﻿using BusinessLogicLayer.DTOs;
 using BusinessLogicLayer.ServiceContracts;
-using BusinessLogicLayer.Services;
 using DataAccessLayer.Entities;
 using DataAccessLayer.RepositoriesContracts;
 using Microsoft.Extensions.Configuration;
@@ -10,12 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogicLayer.RabbitMQ
 {
@@ -73,6 +67,8 @@ namespace BusinessLogicLayer.RabbitMQ
                 
                 if (!string.IsNullOrEmpty(message))
                 {
+                    OrderToApproveMessageResponse otam = new OrderToApproveMessageResponse();
+
                     OrderToApprove orderToApprove = JsonConvert.DeserializeObject<OrderToApprove>(message);
                     // Process the received message
                     _logger.LogInformation("Received products: " + message);
@@ -80,8 +76,14 @@ namespace BusinessLogicLayer.RabbitMQ
                     if (orderToApprove.Products == null || !orderToApprove.Products.Any())
                     {
                         Console.WriteLine("No products to validate.");
+                        otam.Success = false;
+                        otam.ErrorMessage = "No products to validate.";
+                        otam.OrderId = orderToApprove.OrderId;
+                        await Task.Delay(5000);
+                        _ = SendDataToHttpMicroserviceAsync(otam, _config);// Use `_ =` to ignore the task and avoid waiting
                         return;
                     }
+
                     List<string> Skus = orderToApprove.Products
                         .Select(p => p.Sku)
                         .ToList();
@@ -90,22 +92,13 @@ namespace BusinessLogicLayer.RabbitMQ
                         var productsRepo = scope.ServiceProvider.GetRequiredService<IProductsRepository>();
                         List<Product> products = await productsRepo.GetProductsByListOfSkus(Skus);
 
-                        string res = ValidateAndSubtractQuantities(products, orderToApprove.Products);
-                        OrderToApproveMessageResponse otam = new OrderToApproveMessageResponse();
+                        string emptyResOrErrorMessage = ValidateAndSubtractQuantities(products, orderToApprove.Products);
                         otam.OrderId = orderToApprove.OrderId;
-                        otam.ErrorMessage = res;
-                        if (res == "") //success
+                        otam.ErrorMessage = emptyResOrErrorMessage;
+                        if (emptyResOrErrorMessage == "") //success
                         {
-                            foreach (var prod in orderToApprove.Products)
-                            {
-                                var existingProduct = products.FirstOrDefault(p => p.Sku == prod.Sku);
-                                await productsRepo.WithdrawStockAsync(
-                                        prod.Sku,
-                                        existingProduct.Stock,
-                                        prod.Quantity,
-                                        "Withdraw",
-                                        orderToApprove.OrderId);
-                            }
+                            await WithdrawStockByGivenProductsAsync(productsRepo, products, orderToApprove.Products, orderToApprove.OrderId);
+
                                 
                             otam.Success = true;
                             Console.WriteLine("Inventory check passed and quantities subtracted successfully.");
@@ -113,15 +106,13 @@ namespace BusinessLogicLayer.RabbitMQ
                         else
                         {
                             otam.Success = false;
-                            Console.WriteLine("Inventory check failed: " + res);
+                            Console.WriteLine("Inventory check failed: " + emptyResOrErrorMessage);
                         }
                         //sleep for 5 seconds to simulate processing time
                         await Task.Delay(5000);
-                        _ = SendDataToHttpMicroserviceAsync(otam);// Use `_ =` to ignore the task and avoid waiting
+                        _ = SendDataToHttpMicroserviceAsync(otam,_config);// Use `_ =` to ignore the task and avoid waiting
 
                     }
-                    var x = 1;
-
                 }
 
             };
@@ -130,10 +121,27 @@ namespace BusinessLogicLayer.RabbitMQ
                                  consumer: consumer);
             return Task.CompletedTask;
         }
-        public async Task SendDataToHttpMicroserviceAsync(OrderToApproveMessageResponse data)
+
+        private async Task WithdrawStockByGivenProductsAsync(IProductsRepository productsRepo, List<Product> products, List<ProductToApprove> productsToApprove,Guid orderId)
+        {
+            foreach (var prod in productsToApprove)
+            {
+                var existingProduct = products.FirstOrDefault(p => p.Sku == prod.Sku);
+                await productsRepo.WithdrawStockAsync(
+                        prod.Sku,
+                        existingProduct.Stock,
+                        prod.Quantity,
+                        "Withdraw",
+                        orderId);
+            }
+        }
+
+        private async Task SendDataToHttpMicroserviceAsync(OrderToApproveMessageResponse data, IConfiguration _config)
         {
             using var client = new HttpClient();
-            client.BaseAddress = new Uri(_config["ORDER_API_MICROSERVICE_BASE_URL"]+"/api/orders/testOnly"); // Adjust the URL
+            string ordersMicroserviceUrl = $"http://{_config["OrdersMicroserviceName"]}:{_config["OrdersMicroservicePort"]}";
+
+            client.BaseAddress = new Uri(ordersMicroserviceUrl + "/api/orders/testOnly"); // Adjust the URL
 
             // Serialize your data to JSON
             var jsonData = JsonConvert.SerializeObject(data);

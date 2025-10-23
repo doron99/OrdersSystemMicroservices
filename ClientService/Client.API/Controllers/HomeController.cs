@@ -24,8 +24,9 @@ namespace Client.API.Controllers
         
         public IActionResult Index()
         {
+            ViewData["ExternalOrdersMicroserviceBaseUrl"] = $"http://{_config["OrdersMicroserviceExternalName"]}:{_config["OrdersMicroserviceExternalPort"]}";
 
-           
+            ViewData["OrdersMicroserviceBaseUrl"] = $"http://{_config["OrdersMicroserviceName"]}:{_config["OrdersMicroservicePort"]}";
             ViewData["Customers"] = FakeCustomerService.GetCustomers();
             return View();
         }
@@ -37,6 +38,7 @@ namespace Client.API.Controllers
         [HttpGet("orders/add")]
         public async Task<IActionResult> AddNewOrder()
         {
+
             ViewData["Customers"] = FakeCustomerService.GetCustomers();
             ViewData["Products"] = await _productsMicroserviceClient.GetProducts();
 
