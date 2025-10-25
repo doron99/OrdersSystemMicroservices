@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -23,10 +23,13 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Order.BusinessLogicLayer\Order.BusinessLogicLayer.csproj" />
+	  <ProjectReference Include="..\Order.Common\Order.Common.csproj" />
 	  <ProjectReference Include="..\Order.DataAccessLayer\Order.DataAccessLayer.csproj" />
+	  <ProjectReference Include="..\Order.Infrastructure\Order.Infrastructure.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="DTOs\" />
 	  <Folder Include="logs\" />
 	</ItemGroup>
 

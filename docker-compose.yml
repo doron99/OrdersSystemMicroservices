@@ -22,6 +22,10 @@ services:
       - ClientMicroservicePort=8081
       - ClientMicroserviceExternalName=localhost
       - ClientMicroserviceExternalPort=5002
+      - OrdersMicroserviceExternalName=localhost
+      - OrdersMicroserviceExternalPort=5001
+      - OrdersMicroserviceName=order.api
+      - OrdersMicroservicePort=8080
     ports:
       - "5001:8080"  # This maps the external port 5001 to internal port 8080
     depends_on:
@@ -59,6 +63,7 @@ services:
       - ProductsMicroservicePort=8083
       - OrdersMicroserviceExternalName=localhost
       - OrdersMicroserviceExternalPort=5001
+      
     ports:
       - "5002:8081"  # Mapping external port 5002 to internal port 8081
     depends_on:

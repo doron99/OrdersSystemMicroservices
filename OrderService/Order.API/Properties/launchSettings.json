@@ -17,7 +17,11 @@
         "RabbitMQ_Port": "5672",
         "RabbitMQ_Products_Exchange": "product.exchange",
         "ClientMicroserviceName": "localhost",
-        "ClientMicroservicePort": "5002"
+        "ClientMicroservicePort": "5002",
+        "OrdersMicroserviceExternalName": "localhost",
+        "OrdersMicroserviceExternalPort": "5001",
+        "OrdersMicroserviceName": "order.api",
+        "OrdersMicroservicePort": "8080"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5001"

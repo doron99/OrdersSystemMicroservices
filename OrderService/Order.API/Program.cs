@@ -1,14 +1,16 @@
 using BusinessLogicLayer;
+using BusinessLogicLayer.DomainEvents;
+using DataAccessLayer;
+using DataAccessLayer.Data;
+using Infrastructure;
 using Microsoft.OpenApi.Models;
 using Order.API.FilterAttributes;
 using Order.API.Hubs;
 using Order.API.Middleware;
-using DataAccessLayer;
-using DataAccessLayer.Data;
+using Order.API.OperationFilters;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Order.API.OperationFilters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug() // Set minimum log level to Debug for trace logging
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information) // Override for Microsoft logs
-            .Enrich.FromLogContext() // Enrich logs with contextual information
+            //.Enrich.FromLogContext() // Enrich logs with contextual information
             //.Enrich.WithCorrelationId() // Add correlation ID to logs
             .WriteTo.Console() // Log to console
             .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day) // Log to file
@@ -41,6 +43,7 @@ await builder.Services.AddDataAccessLayer(builder.Configuration);
 builder.Services.AddBusinessLogicLayer(builder.Configuration);
 
 builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>();
+builder.Services.AddHttpClient<IDomainEventPublisher, ApiEventPublisher>();
 
 builder.Services.AddCors(options =>
 {

@@ -22,6 +22,8 @@ namespace BusinessLogicLayer
             
             services.AddScoped<IOrdersService, OrdersService>();
             services.AddTransient<IRabbitMQPublisher, RabbitMQPublisher>();
+            services.AddHostedService<RabbitMQInventoryApproveAndProductsStockWithdrawReceivedHostedService>();
+
             //services.AddTransient<IRabbitMQProductGetAllReceivedCunsumer, RabbitMQProductGetAllReceivedCunsumer>();
             //services.AddHostedService<RabbitMQProductGetAllReceivedHostedServiceExampleOnly>();
             return services;

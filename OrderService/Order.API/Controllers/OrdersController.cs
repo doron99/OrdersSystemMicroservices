@@ -3,8 +3,8 @@ using BusinessLogicLayer.ServiceContracts;
 using DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Order.API.DTOs;
 using Order.API.Hubs;
+using Order_Common;
 
 namespace Order.API.Controllers
 {
@@ -36,9 +36,9 @@ namespace Order.API.Controllers
             return Ok(orderCreated);
             //return CreatedAtAction(nameof(GetOrderById), new { id = orderCreated.Id }, orderCreated);
         }
-
-        [HttpPost("testOnly")]
-        public async Task<IActionResult> testOnly([FromBody] OrderToApproveMessageResponse otam)
+        
+        [HttpPost("ChangeOrderStatusAndNotifyUser")]
+        public async Task<IActionResult> ChangeOrderStatusAndNotifyUser([FromBody] OrderToApproveMessageResponse otam)
         {
 
             if (otam.Success) {

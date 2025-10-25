@@ -20,11 +20,14 @@ namespace BusinessLogicLayer.RabbitMQ
         private readonly IServiceProvider _serviceProvider;
         private readonly IModel _channel;
         private readonly IConnection _connection;
+        private readonly IRabbitMQPublisher _rabbitMQPublisher;
+
 
         public RabbitMQInventoryCheckAndApproveReceivedHostedService(
             ILogger<IHostedService> logger, 
             IConfiguration config,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IRabbitMQPublisher rabbitMQPublisher)
         {
             _logger = logger;
             _config = config;
@@ -38,6 +41,7 @@ namespace BusinessLogicLayer.RabbitMQ
             };
             _connection = Factory.CreateConnection();
             _channel = _connection.CreateModel();
+            _rabbitMQPublisher = rabbitMQPublisher;
         }
         public Task StartAsync(CancellationToken cancellationToken)
         {
@@ -80,7 +84,9 @@ namespace BusinessLogicLayer.RabbitMQ
                         otam.ErrorMessage = "No products to validate.";
                         otam.OrderId = orderToApprove.OrderId;
                         await Task.Delay(5000);
-                        _ = SendDataToHttpMicroserviceAsync(otam, _config);// Use `_ =` to ignore the task and avoid waiting
+                        _rabbitMQPublisher.Publish<OrderToApproveMessageResponse>("inventory.approved.retrieved", otam);
+
+                        //_ = SendDataToHttpMicroserviceAsync(otam, _config);// Use `_ =` to ignore the task and avoid waiting
                         return;
                     }
 
@@ -110,7 +116,9 @@ namespace BusinessLogicLayer.RabbitMQ
                         }
                         //sleep for 5 seconds to simulate processing time
                         await Task.Delay(5000);
-                        _ = SendDataToHttpMicroserviceAsync(otam,_config);// Use `_ =` to ignore the task and avoid waiting
+                        _rabbitMQPublisher.Publish<OrderToApproveMessageResponse>("inventory.approved.retrieved", otam);
+
+                        //_ = SendDataToHttpMicroserviceAsync(otam,_config);// Use `_ =` to ignore the task and avoid waiting
 
                     }
                 }
@@ -135,30 +143,30 @@ namespace BusinessLogicLayer.RabbitMQ
                         orderId);
             }
         }
+        //http request test
+        //private async Task SendDataToHttpMicroserviceAsync(OrderToApproveMessageResponse data, IConfiguration _config)
+        //{
+        //    using var client = new HttpClient();
+        //    string ordersMicroserviceUrl = $"http://{_config["OrdersMicroserviceName"]}:{_config["OrdersMicroservicePort"]}";
 
-        private async Task SendDataToHttpMicroserviceAsync(OrderToApproveMessageResponse data, IConfiguration _config)
-        {
-            using var client = new HttpClient();
-            string ordersMicroserviceUrl = $"http://{_config["OrdersMicroserviceName"]}:{_config["OrdersMicroservicePort"]}";
+        //    client.BaseAddress = new Uri(ordersMicroserviceUrl + "/api/orders/ChangeOrderStatusAndNotifyUser"); // Adjust the URL
 
-            client.BaseAddress = new Uri(ordersMicroserviceUrl + "/api/orders/testOnly"); // Adjust the URL
+        //    // Serialize your data to JSON
+        //    var jsonData = JsonConvert.SerializeObject(data);
+        //    var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
-            // Serialize your data to JSON
-            var jsonData = JsonConvert.SerializeObject(data);
-            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+        //    // Send the request asynchronously
+        //    var response = await client.PostAsync("", content);
 
-            // Send the request asynchronously
-            var response = await client.PostAsync("", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("Data sent successfully.");
-            }
-            else
-            {
-                Console.WriteLine($"Error sending data: {response.StatusCode}");
-            }
-        }
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        Console.WriteLine("Data sent successfully.");
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine($"Error sending data: {response.StatusCode}");
+        //    }
+        //}
         /// <summary>
         /// empty string is success
         /// </summary>

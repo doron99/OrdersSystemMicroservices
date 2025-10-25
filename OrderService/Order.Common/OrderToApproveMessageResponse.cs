@@ -1,4 +1,4 @@
-﻿namespace Order.API.DTOs
+﻿namespace Order_Common
 {
     public class OrderToApproveMessageResponse
     {

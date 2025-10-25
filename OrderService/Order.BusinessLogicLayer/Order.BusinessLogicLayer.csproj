@@ -15,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Order.Common\Order.Common.csproj" />
 		<ProjectReference Include="..\Order.DataAccessLayer\Order.DataAccessLayer.csproj" />
 	</ItemGroup>
 
